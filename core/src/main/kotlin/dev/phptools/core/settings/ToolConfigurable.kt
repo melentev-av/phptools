@@ -23,6 +23,10 @@ import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.layout.ComponentPredicate
 import dev.phptools.core.PhpToolsBundle.message
 import dev.phptools.core.ToolSpec
+import dev.phptools.core.docker.DockerDetector
+import dev.phptools.core.docker.DockerGuess
+import com.intellij.openapi.ui.popup.JBPopupFactory
+import com.intellij.ui.dsl.listCellRenderer.textListCellRenderer
 import dev.phptools.core.exec.ToolLocator
 import dev.phptools.core.notify.ToolNotifier
 import javax.swing.AbstractButton
@@ -112,6 +116,9 @@ abstract class ToolConfigurable<S : ToolState>(
                                 .bindText({ working.containerProjectPath.orEmpty() }, { working.containerProjectPath = it })
                                 .align(AlignX.FILL)
                         }.visibleIf(dockerOn)
+                        row {
+                            button(message("docker.detect")) { detectDocker() }
+                        }.visibleIf(dockerOn)
                     }
                     // WSL — только когда IDE запущена на Windows.
                     row { wslRadio = radioButton(message("settings.run.wsl"), RunMode.WSL).component }.visible(SystemInfo.isWindows)
@@ -155,6 +162,41 @@ abstract class ToolConfigurable<S : ToolState>(
     }
 
     override fun isModified(): Boolean = super.isModified() || working != storedState()
+
+    /** «Определить из docker-compose»: заполнить поля Docker в рабочей копии из конфигурации проекта. */
+    private fun detectDocker() {
+        val basePath = project.basePath ?: return
+        dialogPanel.apply()
+        val result = ProgressManager.getInstance().runProcessWithProgressSynchronously<DockerDetector.Result?, RuntimeException>(
+            { DockerDetector.detect(basePath) },
+            message("docker.detect.progress"),
+            true,
+            project,
+        )
+        val title = message("docker.detect")
+        val guesses = result?.guesses.orEmpty()
+        if (result == null || guesses.isEmpty()) {
+            Messages.showInfoMessage(dialogPanel, message("docker.detect.none"), title)
+            return
+        }
+        fun use(guess: DockerGuess) {
+            DockerDetector.apply(working, guess, result.composeCommand)
+            dialogPanel.reset()
+            if (!result.viaCli) Messages.showInfoMessage(dialogPanel, message("docker.detect.fallback"), title)
+        }
+        if (result.confident) {
+            use(guesses.first())
+            return
+        }
+        // Несколько подходящих сервисов — выбор в списке.
+        JBPopupFactory.getInstance()
+            .createPopupChooserBuilder(guesses)
+            .setTitle(message("docker.detect.choose"))
+            .setRenderer(textListCellRenderer { g: DockerGuess? -> g?.let { "${it.service} — ${it.containerProjectPath}" } })
+            .setItemChosenCallback { use(it) }
+            .createPopup()
+            .showInCenterOf(dialogPanel)
+    }
 
     /** «Проверить»: применить панель к рабочей копии и запустить `<exe> --version` в фоне с прогрессом. */
     private fun checkTool() {

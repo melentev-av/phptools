@@ -1,0 +1,19 @@
+services:
+    laravel.test:
+        build:
+            context: ./vendor/laravel/sail/runtimes/8.4
+        image: sail-8.4/app
+        volumes:
+            - '.:/var/www/html'
+    mysql:
+        image: 'mysql/mysql-server:8.0'
+        volumes:
+            - 'sail-mysql:/var/lib/mysql'
+    worker:
+        image: php:8.4-cli
+        volumes:
+            - type: bind
+              source: ./
+              target: /app
+volumes:
+    sail-mysql:

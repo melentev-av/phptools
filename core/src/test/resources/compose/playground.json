@@ -1,0 +1,31 @@
+{
+  "name": "laravel",
+  "networks": {
+    "default": {
+      "name": "laravel_default",
+      "ipam": {}
+    }
+  },
+  "services": {
+    "app": {
+      "command": [
+        "sleep",
+        "infinity"
+      ],
+      "entrypoint": null,
+      "image": "php:8.5-cli",
+      "networks": {
+        "default": null
+      },
+      "volumes": [
+        {
+          "type": "bind",
+          "source": "/home/u/app",
+          "target": "/var/www/html",
+          "bind": {}
+        }
+      ],
+      "working_dir": "/var/www/html"
+    }
+  }
+}

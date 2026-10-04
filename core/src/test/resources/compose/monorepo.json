@@ -1,0 +1,1 @@
+{"services":{"php":{"image":"ghcr.io/acme/php:8.3","volumes":[{"type":"bind","source":"/home/u/mono","target":"/srv"}]}}}

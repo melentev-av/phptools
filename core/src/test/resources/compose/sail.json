@@ -1,0 +1,7 @@
+{"name":"app","services":{
+ "laravel.test":{"build":{"context":"/home/u/app/vendor/laravel/sail/runtimes/8.4","dockerfile":"Dockerfile"},"image":"sail-8.4/app",
+   "volumes":[{"type":"bind","source":"/home/u/app","target":"/var/www/html","bind":{}}]},
+ "mysql":{"image":"mysql/mysql-server:8.0","volumes":[{"type":"volume","source":"sail-mysql","target":"/var/lib/mysql"},
+   {"type":"bind","source":"/home/u/app/vendor/laravel/sail/database/mysql/create-testing-database.sh","target":"/docker-entrypoint-initdb.d/10-create-testing-database.sh"}]},
+ "redis":{"image":"redis:alpine","volumes":[{"type":"volume","source":"sail-redis","target":"/data"}]}
+}}
