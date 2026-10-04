@@ -1,0 +1,14 @@
+[versions]
+kotlin = "2.4.20"
+intellijPlatform = "2.19.0"
+junit = "6.1.3"
+
+[libraries]
+junitBom = { module = "org.junit:junit-bom", version.ref = "junit" }
+junitJupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junitPlatformLauncher = { module = "org.junit.platform:junit-platform-launcher" }
+
+[plugins]
+kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+intellijPlatform = { id = "org.jetbrains.intellij.platform", version.ref = "intellijPlatform" }
+intellijPlatformModule = { id = "org.jetbrains.intellij.platform.module", version.ref = "intellijPlatform" }
