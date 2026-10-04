@@ -1,0 +1,23 @@
+<idea-plugin>
+    <id>dev.phptools.phpcsfixer</id>
+    <name>PHP-CS-Fixer Integration</name>
+    <description><![CDATA[
+    <p>PHP CS Fixer right in the OpenIDE editor. Runs locally or via Docker Compose.</p>
+    <p>Plugin for OpenIDE. JetBrains IDEs are not supported and not tested.</p>
+    <p>PHP CS Fixer прямо в редакторе OpenIDE. Запуск локально или через Docker Compose.</p>
+    <p>Плагин для OpenIDE. Работа в IDE JetBrains не поддерживается и не тестируется.</p>
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <notificationGroup id="php-cs-fixer" displayType="BALLOON"/>
+        <!-- Предлагает выключить встроенный в PHP-плагин анализатор, чтобы ошибки не дублировались -->
+        <postStartupActivity implementation="dev.phptools.phpcsfixer.PhpCsFixerBuiltInCheck"/>
+    </extensions>
+
+    <applicationListeners>
+        <listener class="dev.phptools.core.annotator.RehighlightOnSave"
+                  topic="com.intellij.openapi.fileEditor.FileDocumentManagerListener"/>
+    </applicationListeners>
+</idea-plugin>
