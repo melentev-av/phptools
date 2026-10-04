@@ -17,6 +17,14 @@ dependencies {
         // Классы core вшиваются в jar плагина: без <content> в plugin.xml папка lib/modules не попадает в classpath.
         pluginComposedModule(implementation(project(":core")))
     }
+
+    testImplementation(platform(libs.junitBom))
+    testImplementation(libs.junitJupiter)
+    testRuntimeOnly(libs.junitPlatformLauncher)
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 intellijPlatform {

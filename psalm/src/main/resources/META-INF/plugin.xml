@@ -2,19 +2,49 @@
     <id>dev.phptools.psalm</id>
     <name>Psalm Integration</name>
     <description><![CDATA[
-    <p>Psalm errors right in the OpenIDE editor. Runs locally or via Docker Compose.</p>
+    <p>Psalm problems right in the OpenIDE editor with exact columns, info issues as weak warnings, a @psalm-suppress
+    quick-fix and a Psalm tool window with a report. Runs locally or via Docker Compose.</p>
     <p>Plugin for OpenIDE. JetBrains IDEs are not supported and not tested.</p>
-    <p>Ошибки Psalm прямо в редакторе OpenIDE. Запуск локально или через Docker Compose.</p>
+    <p>Проблемы Psalm прямо в редакторе OpenIDE с точными колонками, info-проблемы как слабые предупреждения,
+    quick-fix @psalm-suppress и панель Psalm с отчётом. Запуск локально или через Docker Compose.</p>
     <p>Плагин для OpenIDE. Работа в IDE JetBrains не поддерживается и не тестируется.</p>
     ]]></description>
 
     <depends>com.intellij.modules.platform</depends>
+    <!-- Список изменённых файлов в панели берётся из VCS -->
+    <depends>com.intellij.modules.vcs</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <notificationGroup id="psalm" displayType="BALLOON"/>
         <!-- Предлагает выключить встроенный в PHP-плагин анализатор, чтобы ошибки не дублировались -->
         <postStartupActivity implementation="dev.phptools.psalm.PsalmBuiltInCheck"/>
+
+        <localInspection shortName="PsalmInspection"
+                         displayName="Psalm validation"
+                         groupName="PHP tools"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         implementationClass="dev.phptools.psalm.PsalmInspection"/>
+        <externalAnnotator language="PHP" implementationClass="dev.phptools.psalm.PsalmAnnotator"/>
+        <editorNotificationProvider implementation="dev.phptools.psalm.PsalmFileProblemsBanner"/>
+
+        <projectConfigurable parentId="tools"
+                             id="dev.phptools.psalm"
+                             displayName="Psalm"
+                             instance="dev.phptools.psalm.PsalmConfigurable"/>
+
+        <toolWindow id="Psalm"
+                    anchor="left"
+                    secondary="false"
+                    icon="/icons/psalm.svg"
+                    factoryClass="dev.phptools.psalm.PsalmToolWindowFactory"/>
     </extensions>
+
+    <actions>
+        <action id="dev.phptools.psalm.CheckWithPsalm" class="dev.phptools.psalm.PsalmCheckAction">
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        </action>
+    </actions>
 
     <applicationListeners>
         <listener class="dev.phptools.core.annotator.RehighlightOnSave"
