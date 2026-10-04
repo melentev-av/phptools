@@ -1,6 +1,6 @@
 # Бриф 03 — Плагин PHP-CS-Fixer
 
-> Предусловие: выполнен бриф 00. Работать в модуле `php-cs-fixer/`. Этот плагин устроен иначе, чем PHPStan и Psalm: он не только подсвечивает нарушения, но и **исправляет** их.
+> Предусловие: выполнены брифы 00, 01a и 01b (режимы проверки, панель и отчёт в `core`). Работать в модуле `php-cs-fixer/`. Этот плагин устроен иначе, чем PHPStan и Psalm: он не только подсвечивает нарушения, но и **исправляет** их.
 
 > **Целевая платформа — только OpenIDE.** Не PhpStorm и не другие IDE JetBrains: сборка, тесты, ручная проверка и публикация (marketplace.openide.ru) только под OpenIDE; никаких зависимостей от PHP-плагина JetBrains (`com.jetbrains.php`). Любое API платформы проверять по jar'ам и исходникам OpenIDE, а не по документации JetBrains, и записывать в `docs/api-notes.md`. Подробно — разделы «Целевая платформа» и «Как проверять API» в брифе 00.
 
@@ -12,10 +12,32 @@
 
 Всё работает локально и через Docker Compose. Laravel Pint в v0.1 не входит.
 
+## Что проверено на реальном PHP-CS-Fixer (3.95.27, PHP 8.5)
+
+Это уточняет и местами меняет разделы ниже.
+
+| Факт | Следствие для плагина |
+|---|---|
+| Коды выхода — битовая маска: 0 OK, 1 общая ошибка, 4 синтаксис (dry-run), 8 есть что исправить (dry-run), 16 ошибка конфигурации, 32 ошибка конфигурации фиксера, 64 исключение | Как в разделе «Коды выхода» |
+| JSON (`--format=json`): `{"about", "files":[{"name","diff"}], "time", "memory"}`. **`appliedFixers` есть только с `-v`** | Передавать `-v` |
+| `diff` начинается с `--- <путь>` / `+++ <путь>` (абсолютный путь или `php://stdin`), куски `@@ -a,b +c,d @@` с 3 строками контекста; соседние изменения сливаются в один кусок | Парсер пропускает заголовки |
+| **Чтение из stdin: путь `-`** — конфиг из рабочей папки применяется, `name` = `php://stdin`, код 8, diff ровно по содержимому stdin | **Несохранённый буфер можно проверять** (без временных файлов, и в Docker тоже) → `canAnalyzeUnsaved = true`, режим «При вводе» по умолчанию. Это отменяет ограничение из раздела «Несохранённый буфер» |
+| Для stdin `Finder` из конфига не работает (путь неизвестен), т.е. `notPath` не исключит файл | Перед анализом буфера проверять, входит ли файл в `php-cs-fixer list-files` (~100 мс, пути `'./app/…'` относительно рабочей папки; кэш на 30 с и до Apply настроек) |
+| Файл вне `Finder` при `--path-mode=intersection` — код 0, `files: []` | Молча |
+| Синтаксическая ошибка — код 4, `files: []` | Молча |
+| В stderr бывает предупреждение «You are running PHP CS Fixer on PHP 8.5.0, but the minimum PHP version … is 8.3» при нормальной работе | stderr показывать только при сбое |
+| Применение всех кусков dry-run diff к исходнику даёт ровно результат `fix` (фикстуры `Messy`, `Long` (несколько кусков), `NoEol` (без перевода строки в конце) в `src/test/resources/fixtures`) | Главный тест |
+
+## Решения поверх брифов 01a/01b
+
+- Режимы проверки из `core` работают как у PHPStan; по умолчанию «При вводе» (через stdin).
+- Панель PHP-CS-Fixer: вкладка «Изменённые файлы» и отчёт «какие файлы и строки поменяются» (по фиксерам). В отчёте вместо «Игнорировать» — **«Исправить файл»** (реальный `fix` для выбранных файлов); для этого в `ToolBatchAnalyzer` из `core` добавляется необязательное файловое действие.
+- `BuiltInAnalyzerCheck` с `CsFixerExternalAnalyzer` уже есть с брифа 00. Встроенный в PHP-плагин Reformat через CS-Fixer (`PhpCsFixerFormattingService`) — отдельная настройка PHP-плагина, плагин её не трогает (упомянуть в README).
+
 ## Метаданные
 
 - Plugin ID: `dev.phptools.phpcsfixer`, имя: **PHP-CS-Fixer Integration** (for OpenIDE)
-- `<depends>com.intellij.modules.platform</depends>`
+- `<depends>com.intellij.modules.platform</depends>`, `<depends>com.intellij.modules.vcs</depends>` (панель)
 - Группа уведомлений: `php-cs-fixer`
 - Инспекция: shortName `PhpCsFixerInspection`, displayName «PHP-CS-Fixer validation», groupName «PHP tools», `enabledByDefault="true"`, `level="WEAK WARNING"`, без `language`. Класс: `LocalInspectionTool(), ExternalAnnotatorBatchInspection`. Описание: `inspectionDescriptions/PhpCsFixerInspection.html`.
 - Аннотатор: `<externalAnnotator language="PHP" implementationClass="...PhpCsFixerAnnotator"/>`.
@@ -39,6 +61,7 @@
     --dry-run
     --diff
     --format=json
+    -v                              # иначе в JSON нет appliedFixers
     --using-cache=no
     --show-progress=none
     --no-interaction
@@ -51,7 +74,7 @@
 
 `--path-mode=intersection` обязателен: тогда учитывается `Finder` из конфига пользователя, и файлы, исключённые в `.php-cs-fixer.php`, не подсвечиваются.
 
-**Несохранённый буфер:** `canAnalyzeUnsaved = false`. Анализ происходит после сохранения через механизм `PendingRehighlight` из `core`. Причина: строки в diff должны соответствовать содержимому документа один в один.
+**Несохранённый буфер:** ~~`canAnalyzeUnsaved = false`~~ — см. «Что проверено»: буфер передаётся в stdin (путь `-` вместо `toTarget(file)`), diff строится ровно по содержимому документа. Исключения `Finder` проверяются через `list-files`.
 
 ### Коды выхода (битовая маска)
 

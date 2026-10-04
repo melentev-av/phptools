@@ -101,6 +101,30 @@
 | Пакетный запуск: файл из `excludePaths` в списке путей просто пропускается; без путей берутся `paths` из конфига; папки поддерживаются | `analyse a.php Excluded.php b.php`, `analyse`, `analyse app/Http` | Пакетный режим панели, `LaunchPlan.fromTarget` для путей из контейнера |
 | В Docker ключи `files` — пути контейнера (`/var/www/html/app/...`) | `docker compose exec` с `php:8.5-cli` | Сопоставление по концу относительного пути |
 
+## Psalm (проверено на 6.19.1, PHP 8.5)
+
+| Факт | Что сделано в плагине |
+|---|---|
+| Коды выхода: 0 — чисто (`[]`), 2 — есть проблемы, 1 — ошибка конфига (stdout пустой, `Problem parsing …` в stderr) | `PsalmOutput` |
+| **`column_from`/`column_to` — в байтах UTF-8** (кириллица левее в строке сдвигает колонку), конец не включается; `from`/`to` тоже байтовые | `ToolProblem.byteColumns` + пересчёт в `ProblemRanges` |
+| `@psalm-suppress A, B` — несколько типов через запятую; через пробел второй тип не подавляется | `PsalmSuppress` |
+| Файл вне `projectFiles` — код 0, `[]` | Молча |
+| `CliUtils::runningUnderAiAgent` (те же переменные, плюс `CLINE_ACTIVE`, `COPILOT_CLI`, `TRAE_AI_SHELL_ID`, `ANTIGRAVITY_AGENT`, `PI_CODING_AGENT`, `AGENT=goose`) выключает только прогресс | Переменные добавлены в `AgentEnvironment` |
+| Аналога `--tmp-file` нет | `canAnalyzeUnsaved = false` |
+
+## PHP-CS-Fixer (проверено на 3.95.27, PHP 8.5)
+
+| Факт | Что сделано в плагине |
+|---|---|
+| Код выхода — битовая маска: 1 общая ошибка, 4 синтаксис, 8 есть что исправить, 16/32 конфигурация, 64 исключение | `CsFixerOutput` |
+| `appliedFixers` в JSON только с `-v` | `-v` всегда |
+| **stdin: путь `-`** — конфиг из рабочей папки применяется, `name` = `php://stdin`, diff по содержимому stdin; работает и через `docker compose exec -T` | Анализ всегда через stdin, `canAnalyzeUnsaved = true` |
+| Для stdin `Finder` не применяется (`notPath` не исключает) | `CsFixerFinder` по `list-files` (пути `'./app/…'`, ~100 мс, кэш 30 с) |
+| Вне `Finder` при `--path-mode=intersection` — код 0, `files: []`; синтаксис — код 4, `files: []` | Молча |
+| В stderr бывает предупреждение о версии PHP проекта при нормальной работе | stderr — только при сбое |
+| Применение всех кусков dry-run diff = результат `fix` (фикстуры в `php-cs-fixer/src/test/resources/fixtures`) | Главный тест |
+| `VfsUtil.markDirtyAndRefresh(async, recursive, reloadChildren, VirtualFile...)` | Перечитывание файлов после `fix` |
+
 ## Встроенные анализаторы PHP-плагина (`ru.openide.openphp` 0.9.3)
 
 Из его `META-INF/plugin.xml`. Это внутренние ID чужого плагина: если они поменяются, `BuiltInAnalyzerCheck`
