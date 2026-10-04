@@ -12,7 +12,7 @@
 | `phpstan` | Плагин `dev.phptools.phpstan` (брифы 01a — редактор, 01b — панель и отчёт). |
 | `psalm` | Плагин `dev.phptools.psalm` (бриф 02). |
 | `php-cs-fixer` | Плагин `dev.phptools.phpcsfixer` (бриф 03). |
-| `phan` | Плагин `dev.phptools.phan` (бриф 04, модуль ещё не создан). |
+| `phan` | Плагин `dev.phptools.phan` (бриф 04). |
 
 Запуск в WSL (OpenIDE на Windows, проект и PHP внутри WSL) — бриф 05, пока не реализован.
 Автоопределение Docker Compose из проекта (свой compose, Laravel Sail) — бриф 06, пока не реализован.

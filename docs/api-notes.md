@@ -125,6 +125,19 @@
 | Применение всех кусков dry-run diff = результат `fix` (фикстуры в `php-cs-fixer/src/test/resources/fixtures`) | Главный тест |
 | `VfsUtil.markDirtyAndRefresh(async, recursive, reloadChildren, VirtualFile...)` | Перечитывание файлов после `fix` |
 
+## Phan (проверено на 6.0.7, PHP 8.5, без php-ast)
+
+| Факт | Что сделано в плагине |
+|---|---|
+| Без `php-ast`: `ERROR: The php-ast extension must be loaded…`; с `--allow-polyfill-parser` работает медленнее (~11 с на файл локально, ~15 с в `php:8.5-cli`) | `allowPolyfillParser = true` по умолчанию; `PhanResult.PhpAstMissing` → понятное уведомление |
+| Анализ одного файла: `-I <file>` (через запятую — несколько), парсится весь `directory_list` | Редактор: `-I <относительный путь>`; панель: `-I a,b,…` (папки раскрываются в PHP-файлы) |
+| Нет `--tmp-file`: подмена файла только в демоне/LSP | `canAnalyzeUnsaved = false`, `checkMode` по умолчанию `ON_SAVE` (`ToolState(defaultCheckMode)`) |
+| Коды: 0 — `[]`, 1 — проблемы; ошибка конфига — 1 без JSON (`ERROR: …` в stderr); файл вне `directory_list` — 0 и пустой stdout | `PhanOutput` |
+| `location.path` — относительно рабочей папки; `lines.begin`/`end`, иногда `begin_column` | Сопоставление по относительному пути, колонка если есть |
+| `description` = `<Category> <check_name> <текст>` | Префикс срезается |
+| `@phan-suppress-next-line A, B` — через запятую | `PhanSuppress` |
+| Документация по проверкам переехала из wiki в `internal/Issue-Types-Caught-by-Phan.md` (заголовки `## PhanXxx`) | `docUrl` → `…/blob/v6/internal/Issue-Types-Caught-by-Phan.md#phanxxx` |
+
 ## Встроенные анализаторы PHP-плагина (`ru.openide.openphp` 0.9.3)
 
 Из его `META-INF/plugin.xml`. Это внутренние ID чужого плагина: если они поменяются, `BuiltInAnalyzerCheck`
