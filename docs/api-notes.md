@@ -159,6 +159,17 @@
 6. `BinaryResolver` по UNC-путям (`Files.isRegularFile(\\wsl.localhost\…\vendor\bin\phpstan)`).
 7. Docker внутри WSL: работает ли `composeCommand = wsl.exe -d <distro> docker compose`.
 
+## Docker Compose: автоопределение (бриф 06, Docker 29.8)
+
+| Факт / API | Что сделано |
+|---|---|
+| `docker compose config --format json` — нормализованная конфигурация (`include`, `extends`, профили, переменные, `COMPOSE_FILE`); монтирование: `{"type":"bind","source":"<абсолютный путь хоста>","target":"…"}` | Основной источник (`ComposeDetection.parseConfigJson`) |
+| `docker ps --filter label=com.docker.compose.project.working_dir=<папка> --format '{{.Label "com.docker.compose.service"}}\|{{.Label "com.docker.compose.project.config_files"}}'` | Запущенные сервисы и файлы compose одной командой (`parseRunning`) |
+| Метка `config_files` — абсолютные пути через запятую; стандартное имя вне папки проекта тоже требует `-f` | `ComposeDetection.composeCommand` |
+| SnakeYAML в платформе: `intellij.libraries.snakeyaml.jar`, `Yaml(SafeConstructor(LoaderOptions()))` | Запасной разбор compose-файла без Docker CLI |
+| `PathEnvironmentVariableUtil.findInPath("php")` | Есть ли `php` локально (решение «предлагать ли Docker») |
+| `JBPopupFactory.createPopupChooserBuilder(list)` | Выбор сервиса; `Messages.showChooseDialog` — `@Deprecated` в 262 |
+
 ## Встроенные анализаторы PHP-плагина (`ru.openide.openphp` 0.9.3)
 
 Из его `META-INF/plugin.xml`. Это внутренние ID чужого плагина: если они поменяются, `BuiltInAnalyzerCheck`

@@ -14,7 +14,6 @@
 | `php-cs-fixer` | Плагин `dev.phptools.phpcsfixer` (бриф 03). |
 | `phan` | Плагин `dev.phptools.phan` (бриф 04). |
 
-Автоопределение Docker Compose из проекта (свой compose, Laravel Sail) — бриф 06, пока не реализован.
 
 Брифы лежат в `docs/briefs/`, заметки по API OpenIDE — в `docs/api-notes.md`.
 
@@ -80,6 +79,8 @@ openphpPluginPath=/Users/<you>/Library/Application Support/OpenIDE/OpenIDE2026.2
 
 - **Локально** — `vendor/bin/<tool>` на этой машине.
 - **Docker Compose** — `docker compose exec -T <сервис> …`; пути проекта переводятся в путь внутри контейнера.
+  - **Автоопределение.** Кнопка «Определить из docker-compose» заполняет сервис, путь проекта в контейнере и команду compose (с `-f`, если проект поднят с нестандартными файлами). Источник — `docker compose config` и метки запущенных контейнеров; без Docker CLI compose-файл читается напрямую.
+  - Если инструмент локально не запустится (нет бинарника или `php`), а в проекте есть compose-файл, при открытии проекта плагин предложит запускать его в контейнере. Ничего не включается без согласия; «Больше не спрашивать» — на проект.
 - **WSL** (только когда OpenIDE запущена на Windows) — для проектов внутри WSL (`\\wsl$\Ubuntu\home\…` или `\\wsl.localhost\…`), когда PHP и Composer установлены в Linux. Плагин запускает `wsl.exe -d <дистрибутив> --cd <папка> --exec …` и переводит пути туда и обратно (`\\wsl.localhost\Ubuntu\home\u\app` ↔ `/home/u/app`, `C:\…` ↔ `/mnt/c/…`).
   - Дистрибутив: пусто — из пути проекта, иначе дистрибутив по умолчанию.
   - «Запускать через login shell» (`bash -lc`) — если `php` доступен только после профиля оболочки (asdf, phpenv и т.п.).
