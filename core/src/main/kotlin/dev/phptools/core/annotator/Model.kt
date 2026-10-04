@@ -23,6 +23,8 @@ data class ToolProblem(
     val column: Int? = null,
     /** 1-based, не включительно (символ на этой позиции уже не подсвечивается). `null` — до конца [endLine]. */
     val endColumn: Int? = null,
+    /** Колонки в байтах UTF-8, а не в символах (так считает, например, Psalm). */
+    val byteColumns: Boolean = false,
     val message: String,
     val tooltipHtml: String? = null,
     /** Info-уровень: severity не выше WEAK_WARNING. */

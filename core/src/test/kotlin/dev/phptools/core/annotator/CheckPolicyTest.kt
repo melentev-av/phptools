@@ -42,5 +42,7 @@ class CheckPolicyTest {
         val env = mapOf("PATH" to "/bin", "CLAUDECODE" to "1", "AI_AGENT" to "x", "HOME" to "/h", "CURSOR_AGENT" to "1")
 
         assertEquals(mapOf("PATH" to "/bin", "HOME" to "/h"), AgentEnvironment.strip(env))
+        assertEquals(mapOf("AGENT" to "build"), AgentEnvironment.strip(mapOf("AGENT" to "build", "CLINE_ACTIVE" to "1")))
+        assertEquals(emptyMap<String, String>(), AgentEnvironment.strip(mapOf("AGENT" to "Goose")))
     }
 }

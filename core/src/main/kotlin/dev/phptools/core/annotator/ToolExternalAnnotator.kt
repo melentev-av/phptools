@@ -98,7 +98,7 @@ abstract class ToolExternalAnnotator : ExternalAnnotator<AnnotationInput, Annota
         val severity = profileSeverity(file)
         val ranges = ProblemRanges(document.charsSequence)
         for (problem in result.findings.problems) {
-            val range = ranges.compute(problem.line, problem.endLine, problem.column, problem.endColumn)
+            val range = ranges.compute(problem.line, problem.endLine, problem.column, problem.endColumn, problem.byteColumns)
             val problemSeverity = if (problem.weak && severity > HighlightSeverity.WEAK_WARNING) HighlightSeverity.WEAK_WARNING else severity
             var builder = holder.newAnnotation(problemSeverity, problem.message)
                 .range(TextRange(range.first, range.last + 1))
