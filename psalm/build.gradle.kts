@@ -34,6 +34,7 @@ intellijPlatform {
         version = providers.gradleProperty("pluginVersion")
         vendor {
             name = providers.gradleProperty("pluginVendor")
+            email = providers.gradleProperty("pluginVendorEmail")
         }
         ideaVersion {
             sinceBuild = providers.gradleProperty("platformSinceBuild")

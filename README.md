@@ -112,3 +112,7 @@ Settings → Plugins → ⚙ → **Install Plugin from Disk…** → выбра�
 ## Публикация
 
 Только в маркетплейс OpenIDE (marketplace.openide.ru). Публикация в JetBrains Marketplace не настраивается.
+
+## Лицензия
+
+[MIT](LICENSE) © 2026 Andrey Melentev. Иконка панели PHPStan — логотип проекта [PHPStan](https://github.com/phpstan/phpstan) (MIT, © Ondřej Mirtes, PHPStan s.r.o.).
