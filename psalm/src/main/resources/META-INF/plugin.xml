@@ -16,6 +16,8 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <notificationGroup id="psalm" displayType="BALLOON"/>
+        <!-- Windows: проект в WSL, а инструмент запускается локально — предложить WSL -->
+        <postStartupActivity implementation="dev.phptools.psalm.PsalmWslSuggestion"/>
         <!-- Предлагает выключить встроенный в PHP-плагин анализатор, чтобы ошибки не дублировались -->
         <postStartupActivity implementation="dev.phptools.psalm.PsalmBuiltInCheck"/>
 

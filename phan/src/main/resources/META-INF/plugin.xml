@@ -16,6 +16,8 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <notificationGroup id="phan" displayType="BALLOON"/>
+        <!-- Windows: проект в WSL, а инструмент запускается локально — предложить WSL -->
+        <postStartupActivity implementation="dev.phptools.phan.PhanWslSuggestion"/>
 
         <localInspection shortName="PhanInspection"
                          displayName="Phan validation"

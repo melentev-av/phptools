@@ -82,7 +82,7 @@ object PhpStanBatchAnalyzer : ToolBatchAnalyzer {
     private fun details(project: Project, tool: PreparedTool, state: PhpStanState, config: String?): List<String> = buildList {
         PhpStanLevels.effectiveLevel(project, tool, state, config)?.let { add(message("report.level", it)) }
         state.configPath.orEmpty().trim().takeIf { it.isNotEmpty() }?.let { add(Path.of(it).fileName.toString()) }
-        if (tool.isDocker) add("Docker")
+        tool.runtimeLabel?.let(::add)
     }
 }
 

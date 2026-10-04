@@ -29,7 +29,7 @@ object CsFixerBatchAnalyzer : ToolBatchAnalyzer {
         val extra = CsFixerRun.extraArgs(state)
         val details = buildList {
             if (state.allowRisky) add(message("report.risky"))
-            if (tool.isDocker) add("Docker")
+            tool.runtimeLabel?.let(::add)
         }
 
         fun args(chunk: List<String>) = CsFixerCommand.dryRunArgs(chunk, config, state.allowRisky, extra)

@@ -32,7 +32,7 @@ object PsalmBatchAnalyzer : ToolBatchAnalyzer {
         val extra = ParametersListUtil.parse(state.extraArgs.orEmpty())
         val details = buildList {
             if (state.showInfo) add(message("report.show.info"))
-            if (tool.isDocker) add("Docker")
+            tool.runtimeLabel?.let(::add)
         }
 
         fun args(chunk: List<String>) = PsalmCommand.args(chunk, state.threads, state.showInfo, config, extra)

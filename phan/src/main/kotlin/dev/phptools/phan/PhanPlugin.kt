@@ -190,3 +190,8 @@ class PhanInspection : LocalInspectionTool(), ExternalAnnotatorBatchInspection {
 }
 
 class PhanFileProblemsBanner : FileProblemsBanner(PhanTool.SPEC)
+
+/** Windows: проект в WSL, а инструмент запускается локально — предложить WSL. */
+class PhanWslSuggestion : dev.phptools.core.startup.WslSuggestion(PhanTool.SPEC) {
+    override fun state(project: com.intellij.openapi.project.Project) = PhanSettings.getInstance(project).state
+}

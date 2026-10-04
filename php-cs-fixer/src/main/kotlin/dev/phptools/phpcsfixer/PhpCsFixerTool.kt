@@ -14,3 +14,8 @@ object PhpCsFixerTool {
 }
 
 class PhpCsFixerBuiltInCheck : BuiltInAnalyzerCheck(PhpCsFixerTool.SPEC)
+
+/** Windows: проект в WSL, а инструмент запускается локально — предложить WSL. */
+class CsFixerWslSuggestion : dev.phptools.core.startup.WslSuggestion(PhpCsFixerTool.SPEC) {
+    override fun state(project: com.intellij.openapi.project.Project) = CsFixerSettings.getInstance(project).state
+}

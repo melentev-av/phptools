@@ -36,7 +36,7 @@ object PhanBatchAnalyzer : ToolBatchAnalyzer {
         val extra = ParametersListUtil.parse(state.extraArgs.orEmpty())
         val details = buildList {
             if (state.allowPolyfillParser) add(message("report.polyfill"))
-            if (tool.isDocker) add("Docker")
+            tool.runtimeLabel?.let(::add)
         }
 
         fun args(files: List<String>) = PhanCommand.args(files, state.allowPolyfillParser, state.memoryLimit, config, extra, state.processes)
