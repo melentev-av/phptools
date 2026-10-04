@@ -1,0 +1,51 @@
+<idea-plugin>
+    <id>dev.phptools.phan</id>
+    <name>Phan Integration</name>
+    <description><![CDATA[
+    <p>Phan problems right in the OpenIDE editor, a @phan-suppress-next-line quick-fix and a Phan tool window with a report.
+    Runs locally or via Docker Compose. Works without the php-ast extension (polyfill parser), faster with it.</p>
+    <p>Plugin for OpenIDE. JetBrains IDEs are not supported and not tested.</p>
+    <p>Проблемы Phan прямо в редакторе OpenIDE, quick-fix @phan-suppress-next-line и панель Phan с отчётом.
+    Запуск локально или через Docker Compose. Работает без расширения php-ast (polyfill-парсер), с ним — быстрее.</p>
+    <p>Плагин для OpenIDE. Работа в IDE JetBrains не поддерживается и не тестируется.</p>
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+    <!-- Список изменённых файлов в панели берётся из VCS -->
+    <depends>com.intellij.modules.vcs</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <notificationGroup id="phan" displayType="BALLOON"/>
+
+        <localInspection shortName="PhanInspection"
+                         displayName="Phan validation"
+                         groupName="PHP tools"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         implementationClass="dev.phptools.phan.PhanInspection"/>
+        <externalAnnotator language="PHP" implementationClass="dev.phptools.phan.PhanAnnotator"/>
+        <editorNotificationProvider implementation="dev.phptools.phan.PhanFileProblemsBanner"/>
+
+        <projectConfigurable parentId="tools"
+                             id="dev.phptools.phan"
+                             displayName="Phan"
+                             instance="dev.phptools.phan.PhanConfigurable"/>
+
+        <toolWindow id="Phan"
+                    anchor="left"
+                    secondary="false"
+                    icon="/icons/phan.svg"
+                    factoryClass="dev.phptools.phan.PhanToolWindowFactory"/>
+    </extensions>
+
+    <actions>
+        <action id="dev.phptools.phan.CheckWithPhan" class="dev.phptools.phan.PhanCheckAction">
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        </action>
+    </actions>
+
+    <applicationListeners>
+        <listener class="dev.phptools.core.annotator.RehighlightOnSave"
+                  topic="com.intellij.openapi.fileEditor.FileDocumentManagerListener"/>
+    </applicationListeners>
+</idea-plugin>

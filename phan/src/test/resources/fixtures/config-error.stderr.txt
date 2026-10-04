@@ -1,0 +1,14 @@
+ERROR: ParseError: syntax error, unexpected token "]" in /private/tmp/bad-phan.php:1
+Stack trace:
+#0 /Users/andy/Work/OpenSource/OpenIDEPlugins/playground/laravel/vendor/phan/phan/src/Phan/CLI.php(494): Phan\CLI->maybeReadConfigFile(false, true)
+#1 /Users/andy/Work/OpenSource/OpenIDEPlugins/playground/laravel/vendor/phan/phan/src/Phan/CLI.php(368): Phan\CLI->__construct(Array, Array)
+#2 /Users/andy/Work/OpenSource/OpenIDEPlugins/playground/laravel/vendor/phan/phan/src/phan.php(16): Phan\CLI::fromArgv()
+#3 /Users/andy/Work/OpenSource/OpenIDEPlugins/playground/laravel/vendor/phan/phan/phan(10): require_once('/Users/andy/Wor...')
+#4 /Users/andy/Work/OpenSource/OpenIDEPlugins/playground/laravel/vendor/bin/phan(119): include('/Users/andy/Wor...')
+#5 {main}
+More details:
+#0: Phan\CLI->maybeReadConfigFile() called at [/Users/andy/Work/OpenSource/OpenIDEPlugins/playground/laravel/vendor/phan/phan/src/Phan/CLI.php:494] Args: [false, true]
+#1: Phan\CLI->__construct() called at [/Users/andy/Work/OpenSource/OpenIDEPlugins/playground/laravel/vendor/phan/phan/src/Phan/CLI.php:368] Args: [{"allow-polyfill-parser":false, "no-progress-bar":false, "m":"json", "k":"/tmp/bad-phan.php", "I":"app/Clean.php"}, ["vendor/bin/phan", "--allow-polyfill-parser", "--no-progress-bar", "-m", "json", "-k", "/tmp/bad-phan.php", "-I", "app/Clean.php"]]
+#2: Phan\CLI::fromArgv() called at [/Users/andy/Work/OpenSource/OpenIDEPlugins/playground/laravel/vendor/phan/phan/src/phan.php:16]
+#3: require_once() called at [/Users/andy/Work/OpenSource/OpenIDEPlugins/playground/laravel/vendor/phan/phan/phan:10] Args: ["/Users/andy/Work/OpenSource/OpenIDEPlugins/playground/laravel/vendor/phan/phan/src/phan.php"]
+#4: include() called at [/Users/andy/Work/OpenSource/OpenIDEPlugins/playground/laravel/vendor/bin/phan:119] Args: ["/Users/andy/Work/OpenSource/OpenIDEPlugins/playground/laravel/vendor/phan/phan/phan"]
