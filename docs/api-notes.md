@@ -52,6 +52,36 @@
 | `PropertiesComponent.getInstance(project).isTrueValue / setValue(key, true)` | `intellij.platform.core.jar` | Флаг «Больше не спрашивать». |
 | `com.intellij.openapi.application.readAction { }` | `CoroutinesKt` | Для чтения профиля из `ProjectActivity`. |
 
+## API, добавленное в брифе 01a
+
+| Класс / метод | Jar | Особенности |
+|---|---|---|
+| `GeneralCommandLine.getParentEnvironment()` + `withParentEnvironmentType(NONE)` + `withEnvironment(map)` | `util.jar` | Так из окружения консоли убираются переменные AI-агентов (`AgentEnvironment`). |
+| `com.intellij.util.EnvironmentUtil.getEnvironmentMap()` | `util.jar` | Не путать с `com.intellij.ide.environment.impl.EnvironmentUtil`. |
+| `EditorNotificationProvider.collectNotificationData(project, file): Function<in FileEditor, out JComponent?>?` | `intellij.platform.ide.jar` | Регистрация `<editorNotificationProvider>`. |
+| `EditorNotificationPanel(FileEditor, Status)`, `.text()`, `.createActionLabel(String, Runnable)`, `Status.Warning` | `intellij.platform.ide.jar` | — |
+| `EditorNotifications.getInstance(project).updateNotifications(file)` | `intellij.platform.ide.jar` | — |
+| `BaseState.enum(default)` | `intellij.platform.projectModel.jar` | Для `CheckMode`. |
+| `Panel.buttonsGroup(title) { row { radioButton(text, value) } }.bind(getter, setter)` | `intellij.platform.ide.impl.jar` | `ButtonsGroupKt.bind`. |
+| `Row.comboBox(items, renderer).bindItem(getter, setter)` | `intellij.platform.ide.impl.jar` | — |
+| `com.intellij.ui.dsl.listCellRenderer.textListCellRenderer { }` | `intellij.platform.ide.impl.jar` | `SimpleListCellRenderer.create(String, Function)` — `@Deprecated`. |
+| `LocalInspectionTool` + `ExternalAnnotatorBatchInspection` | `intellij.platform.analysis.jar` / `.impl.jar` | `getShortName()` переопределён. |
+| `IntentionAction` (`getText`, `getFamilyName`, `isAvailable`, `invoke`, `startInWriteAction`) | `intellij.platform.analysis.jar` | — |
+
+## PHPStan (проверено на 2.2.16 + Larastan 3.12, PHP 8.5)
+
+| Факт | Как проверено | Что сделано в плагине |
+|---|---|---|
+| При переменных AI-агента (`PHPStan\Internal\AgentDetector::ENV_VARS`: `AI_AGENT`, `CLAUDECODE`, `CLAUDE_CODE`, `CURSOR_AGENT`, `CURSOR_TRACE_ID`, `CODEX_SANDBOX`, `CODEX_THREAD_ID`, `GEMINI_CLI`, `AUGMENT_AGENT`, `AMP_CURRENT_THREAD_ID`, `OPENCODE`, `OPENCODE_CLIENT`, `REPL_ID`; ещё файл `/opt/.devin`) JSON меняется на `{"tool","result","errors","error_details","instructions"}` и в stderr добавляются инструкции для агента | Запуск из Claude Code и с `env -i`; исходник `src/Internal/AgentDetector.php` в phar | `AgentEnvironment` убирает переменные; парсер понимает оба формата |
+| `Note: Using configuration file …` пишется в stderr, stdout — чистый JSON | Раздельный вывод потоков | Парсер всё равно ищет JSON с первой `{` |
+| Ошибка конфига (`Invalid configuration: …`): код 1, stdout пустой, текст в stderr | `-c` с лишним параметром | Код 0/1 без JSON — сбой, уведомление со stderr |
+| Файл из `excludePaths`: код 1, stdout пустой, stderr `[ERROR] No files found to analyse.` | `app/Excluded.php` | Молча, без аннотаций |
+| Без `level` в конфиге и без `--level`: `analyse` и `dump-parameters` падают с `No rules detected` (код 1) | Конфиг без `level` | Уровень из настроек — только при его отсутствии в конфиге; подсказка в уведомлении |
+| `dump-parameters --json` отдаёт плоский объект параметров: `"level": 6` (число или `"max"`), `"usedLevel": "6"` | Вывод команды | `PhpStanConfigLevel` |
+| `--tmp-file`/`--instead-of` работают в 2.2.16; в 1.12.0 — stderr `The "--tmp-file" option does not exist.`, код 1 | PHPStan 1.12.0 во временной папке | `PhpStanResult.TmpFileUnsupported` |
+| Синтаксическая ошибка: `identifier: "phpstan.parse"`, `ignorable: false`, со строкой | `app/Syntax.php` | Quick-fix не предлагается |
+| В Docker ключи `files` — пути контейнера (`/var/www/html/app/...`) | `docker compose exec` с `php:8.5-cli` | Сопоставление по концу относительного пути |
+
 ## Встроенные анализаторы PHP-плагина (`ru.openide.openphp` 0.9.3)
 
 Из его `META-INF/plugin.xml`. Это внутренние ID чужого плагина: если они поменяются, `BuiltInAnalyzerCheck`
