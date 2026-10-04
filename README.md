@@ -14,6 +14,8 @@
 | `php-cs-fixer` | Плагин `dev.phptools.phpcsfixer` (бриф 03). |
 | `phan` | Плагин `dev.phptools.phan` (бриф 04, модуль ещё не создан). |
 
+Запуск в WSL (OpenIDE на Windows, проект и PHP внутри WSL) — бриф 05, пока не реализован.
+
 Брифы лежат в `docs/briefs/`, заметки по API OpenIDE — в `docs/api-notes.md`.
 
 ## Требования
