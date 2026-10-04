@@ -54,6 +54,12 @@ class PhpStanCommandTest {
     }
 
     @Test
+    fun `batch arguments for several targets and for the whole project`() {
+        assertEquals(base + listOf("--level=5", "/p/app/A.php", "/p/app/Models"), PhpStanCommand.batchArgs(listOf("/p/app/A.php", "/p/app/Models"), null, null, "5", emptyList()))
+        assertEquals(base + listOf("-c", "/p/phpstan.neon"), PhpStanCommand.batchArgs(emptyList(), "", "/p/phpstan.neon", null, emptyList()))
+    }
+
+    @Test
     fun `dump parameters arguments`() {
         assertEquals(listOf("dump-parameters", "--json", "--no-interaction", "-c", "/p/phpstan.neon"), PhpStanCommand.dumpParametersArgs("/p/phpstan.neon"))
         assertEquals(listOf("dump-parameters", "--json", "--no-interaction"), PhpStanCommand.dumpParametersArgs(null))

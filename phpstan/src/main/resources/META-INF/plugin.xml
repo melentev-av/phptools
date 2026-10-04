@@ -11,6 +11,8 @@
     ]]></description>
 
     <depends>com.intellij.modules.platform</depends>
+    <!-- Список изменённых файлов в панели берётся из VCS -->
+    <depends>com.intellij.modules.vcs</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <notificationGroup id="phpstan" displayType="BALLOON"/>
@@ -30,7 +32,20 @@
                              id="dev.phptools.phpstan"
                              displayName="PHPStan"
                              instance="dev.phptools.phpstan.PhpStanConfigurable"/>
+
+        <!-- Панель: изменённые файлы и отчёт. Иконка — логотип PHPStan (MIT, см. icons/PHPSTAN-LOGO-LICENSE.txt) -->
+        <toolWindow id="PHPStan"
+                    anchor="left"
+                    secondary="false"
+                    icon="/icons/phpstan.png"
+                    factoryClass="dev.phptools.phpstan.PhpStanToolWindowFactory"/>
     </extensions>
+
+    <actions>
+        <action id="dev.phptools.phpstan.CheckWithPhpStan" class="dev.phptools.phpstan.PhpStanCheckAction">
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        </action>
+    </actions>
 
     <applicationListeners>
         <listener class="dev.phptools.core.annotator.RehighlightOnSave"

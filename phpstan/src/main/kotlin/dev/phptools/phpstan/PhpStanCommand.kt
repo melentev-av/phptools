@@ -20,16 +20,24 @@ object PhpStanCommand {
         extraArgs: List<String>,
         tmpFile: String? = null,
     ): List<String> = buildList {
-        addAll(listOf("analyse", "--error-format=json", "--no-progress", "--no-interaction"))
-        memoryLimit?.trim()?.takeIf { it.isNotEmpty() }?.let { add("--memory-limit=$it") }
-        config?.takeIf { it.isNotBlank() }?.let { addAll(listOf("-c", it)) }
-        level?.trim()?.takeIf { it.isNotEmpty() }?.let { add("--level=$it") }
-        addAll(extraArgs)
+        addAll(options(memoryLimit, config, level, extraArgs))
         if (tmpFile != null) {
             add("--tmp-file=$tmpFile")
             add("--instead-of=$target")
         }
         add(target)
+    }
+
+    /** Пакетный запуск из панели: несколько файлов/папок; пустой [targets] — пути из конфигурации. */
+    fun batchArgs(targets: List<String>, memoryLimit: String?, config: String?, level: String?, extraArgs: List<String>): List<String> =
+        options(memoryLimit, config, level, extraArgs) + targets
+
+    private fun options(memoryLimit: String?, config: String?, level: String?, extraArgs: List<String>): List<String> = buildList {
+        addAll(listOf("analyse", "--error-format=json", "--no-progress", "--no-interaction"))
+        memoryLimit?.trim()?.takeIf { it.isNotEmpty() }?.let { add("--memory-limit=$it") }
+        config?.takeIf { it.isNotBlank() }?.let { addAll(listOf("-c", it)) }
+        level?.trim()?.takeIf { it.isNotEmpty() }?.let { add("--level=$it") }
+        addAll(extraArgs)
     }
 
     fun dumpParametersArgs(config: String?): List<String> = buildList {

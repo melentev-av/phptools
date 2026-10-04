@@ -29,8 +29,17 @@ object PhpStanLevels {
      */
     fun levelArgument(project: Project, tool: PreparedTool, state: PhpStanState, config: String?): String? {
         val chosen = state.level.orEmpty().trim().ifEmpty { return null }
-        val fromConfig = PhpStanRuntime.configLevel(project)
-            ?: detect(tool, config).also { PhpStanRuntime.rememberConfigLevel(project, it) }
-        return if (fromConfig is ConfigLevel.Set) null else chosen
+        return if (configLevel(project, tool, config) is ConfigLevel.Set) null else chosen
     }
+
+    /** Уровень из конфига с кэшем до Apply настроек. */
+    fun configLevel(project: Project, tool: PreparedTool, config: String?): ConfigLevel =
+        PhpStanRuntime.configLevel(project) ?: detect(tool, config).also { PhpStanRuntime.rememberConfigLevel(project, it) }
+
+    /** Уровень, с которым фактически идёт анализ, — для шапки отчёта. */
+    fun effectiveLevel(project: Project, tool: PreparedTool, state: PhpStanState, config: String?): String? =
+        when (val level = configLevel(project, tool, config)) {
+            is ConfigLevel.Set -> level.level
+            else -> state.level.orEmpty().trim().ifEmpty { null }
+        }
 }
