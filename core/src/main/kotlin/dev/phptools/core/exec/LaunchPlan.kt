@@ -35,6 +35,21 @@ class LaunchPlan private constructor(
         return mapToContainer(projectBase, target.containerProjectPath, path)
     }
 
+    /**
+     * Обратный маппинг пути из вывода инструмента в локальный: путь контейнера внутри [DockerTarget.containerProjectPath]
+     * → путь в проекте. Остальные пути (и всё в локальном режиме) — как есть.
+     */
+    fun fromTarget(toolPath: String): Path {
+        val target = docker ?: return Path.of(toolPath)
+        val root = target.containerProjectPath.trimEnd('/', '\\').replace('\\', '/')
+        val normalized = toolPath.replace('\\', '/')
+        return when {
+            normalized == root -> projectBase
+            normalized.startsWith("$root/") -> projectBase.resolve(normalized.removePrefix("$root/")).normalize()
+            else -> Path.of(toolPath)
+        }
+    }
+
     fun command(args: List<String>): CommandSpec {
         val target = docker ?: return CommandSpec(invocation(args), workDir)
         return CommandSpec(composeExec(target) + invocation(args), projectBase)

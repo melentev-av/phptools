@@ -36,6 +36,15 @@ class PreparedTool(
     /** Путь, понятный инструменту: локальный абсолютный или путь внутри контейнера. */
     fun toTarget(localPath: Path): String = plan.toTarget(localPath)
 
+    /** Путь из вывода инструмента → локальный (см. [LaunchPlan.fromTarget]). */
+    fun fromTarget(toolPath: String): Path = plan.fromTarget(toolPath)
+
+    /** Тот же инструмент с другим таймаутом (например, для пакетного запуска из панели). */
+    fun withTimeout(timeoutMs: Int): PreparedTool = PreparedTool(spec, plan, timeoutMs)
+
+    /** Длина неизменной части команды — для разбиения путей на пачки ([CommandChunks]). */
+    fun commandLength(args: List<String>): Int = plan.command(args).command.sumOf { it.length + 1 }
+
     fun run(args: List<String>, stdin: String? = null): ToolOutput = execute(plan.command(args), stdin)
 
     /**

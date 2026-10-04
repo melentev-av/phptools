@@ -10,6 +10,8 @@ import com.intellij.ui.EditorNotificationProvider
 import com.intellij.ui.EditorNotifications
 import dev.phptools.core.PhpToolsBundle.message
 import dev.phptools.core.ToolSpec
+import dev.phptools.core.panel.ToolPanelFactory
+import com.intellij.openapi.wm.ToolWindowManager
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Function
 import javax.swing.JComponent
@@ -57,6 +59,9 @@ abstract class FileProblemsBanner(private val spec: ToolSpec) : EditorNotificati
             EditorNotificationPanel(editor, EditorNotificationPanel.Status.Warning).apply {
                 text(text)
                 toolTipText = fileMessages.joinToString("<br>", "<html>", "</html>") { StringUtil.escapeXmlEntities(it) }
+                if (ToolWindowManager.getInstance(project).getToolWindow(spec.displayName) != null) {
+                    createActionLabel(message("banner.open.report")) { ToolPanelFactory.showReport(project, spec.displayName) }
+                }
                 createActionLabel(message("banner.hide")) {
                     FileProblems.dismiss(spec, file)
                     EditorNotifications.getInstance(project).updateNotifications(file)
