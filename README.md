@@ -111,16 +111,6 @@ Settings → Plugins → ⚙ → **Install Plugin from Disk…** → выбра�
 
 Юнит-тесты на JUnit 5 покрывают чистую логику: маппинг путей, поиск бинарника на временной структуре папок, сборку командной строки для local и Docker, перевод строк и колонок в диапазоны. Платформенный тест-фреймворк не используется, потому что тянет артефакты с серверов JetBrains. Чистая логика вынесена в классы без зависимостей от платформы (`BinaryResolver`, `LaunchPlan`, `ProblemRanges`).
 
-## Ответы на открытые вопросы брифа 00
-
-Подробно, с указанием jar'ов, — в `docs/api-notes.md`.
-
-1. **ID языка PHP** — `PHP` (плагин `ru.openide.openphp`).
-2. **`ExternalAnnotatorBatchInspection`** — `com.intellij.codeInspection.ex.ExternalAnnotatorBatchInspection`.
-3. **UI DSL** — сигнатуры `textFieldWithBrowseButton`, `bindText(getter, setter)` и т.п. совпадают, адаптация не понадобилась.
-4. **Product-модуль OpenIDE** — собственного нет, плагины зависят от `com.intellij.modules.platform`. Установку только в OpenIDE штатно ограничить нельзя.
-5. **Требования маркетплейса OpenIDE** — публично не описаны, нужно уточнить в разделе «Опубликовать свой плагин» на marketplace.openide.ru до первой публикации.
-
 ## Публикация
 
 Только в маркетплейс OpenIDE (marketplace.openide.ru). Публикация в JetBrains Marketplace не настраивается.
