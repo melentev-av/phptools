@@ -1,6 +1,6 @@
 # Бриф 00 — Скелет монорепозитория и общий модуль `core`
 
-> Выполняется **первым**. Брифы 01 (PHPStan), 02 (Psalm), 03 (PHP-CS-Fixer) опираются на то, что сделано здесь.
+> Выполняется **первым**. Брифы 01a и 01b (PHPStan), 02 (Psalm), 03 (PHP-CS-Fixer) опираются на то, что сделано здесь.
 
 ## Цель
 
@@ -75,7 +75,7 @@ php-tools/
 ├── core/
 │   ├── build.gradle.kts         # plugin: org.jetbrains.intellij.platform.module
 │   └── src/main/kotlin/dev/phptools/core/...
-├── phpstan/                     # бриф 01
+├── phpstan/                     # брифы 01a, 01b
 ├── psalm/                       # бриф 02
 └── php-cs-fixer/                # бриф 03
 ```

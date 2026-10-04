@@ -9,7 +9,7 @@
 | Модуль | Что это |
 |---|---|
 | `core` | Общий код: поиск бинарника, запуск локально или через Docker Compose, маппинг путей, базовые настройки, уведомления, базовый `ExternalAnnotator`. Отдельно не публикуется, вшивается в jar каждого плагина. |
-| `phpstan` | Плагин `dev.phptools.phpstan` (бриф 01). |
+| `phpstan` | Плагин `dev.phptools.phpstan` (брифы 01a — редактор, 01b — панель и отчёт). |
 | `psalm` | Плагин `dev.phptools.psalm` (бриф 02). |
 | `php-cs-fixer` | Плагин `dev.phptools.phpcsfixer` (бриф 03). |
 
