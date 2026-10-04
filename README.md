@@ -15,6 +15,7 @@
 | `phan` | Плагин `dev.phptools.phan` (бриф 04, модуль ещё не создан). |
 
 Запуск в WSL (OpenIDE на Windows, проект и PHP внутри WSL) — бриф 05, пока не реализован.
+Автоопределение Docker Compose из проекта (свой compose, Laravel Sail) — бриф 06, пока не реализован.
 
 Брифы лежат в `docs/briefs/`, заметки по API OpenIDE — в `docs/api-notes.md`.
 
