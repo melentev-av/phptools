@@ -38,18 +38,22 @@ intellijPlatform {
         }
         ideaVersion {
             sinceBuild = providers.gradleProperty("platformSinceBuild")
-            untilBuild = providers.gradleProperty("platformUntilBuild")
+            // Без until-build: плагин ставится и в следующие версии OpenIDE.
+            untilBuild = provider { null }
         }
     }
 }
 
 // Песочница с PHP-плагином OpenIDE для ручной проверки: ./gradlew :<модуль>:runIdeWithPhp.
 // Плагин кладётся только в песочницу и в зависимости сборки не попадает.
-intellijPlatformTesting {
-    runIde {
-        register("runIdeWithPhp") {
-            plugins {
-                localPlugin(providers.gradleProperty("openphpPluginPath"))
+// Задача есть, только если задан openphpPluginPath (в CI его нет).
+providers.gradleProperty("openphpPluginPath").orNull?.let { openphpPluginPath ->
+    intellijPlatformTesting {
+        runIde {
+            register("runIdeWithPhp") {
+                plugins {
+                    localPlugin(openphpPluginPath)
+                }
             }
         }
     }
