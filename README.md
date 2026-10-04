@@ -87,18 +87,6 @@ openphpPluginPath=/Users/<you>/Library/Application Support/OpenIDE/OpenIDE2026.2
   - Если проект открыт из WSL, а инструмент запускается локально, при открытии проекта плагин предложит переключиться на WSL.
   - WSL-режим проверен юнит-тестами; живая проверка на Windows — по брифу 05.
 
-## CI и релизы (GitHub Actions)
-
-- **Build** (`.github/workflows/build.yml`) — на push в `develop` и на pull request (на `main` не нужна: туда попадает уже проверенное, а релиз собирает всё заново): сборка, тесты, `verifyPluginStructure`; zip всех плагинов — в артефактах запуска.
-- **Release** (`.github/workflows/release.yml`) — на тег `vX.Y.Z`: то же самое с версией из тега и GitHub Release со всеми четырьмя zip. Монорепозиторий, поэтому релиз общий: один тег — все плагины одной версии. Тег с суффиксом (`v0.2.0-beta.1`) — пре-релиз.
-- Платформа — настоящая OpenIDE: CI скачивает `https://download.openide.ru/<openideBuild>/openIDE-<openideBuild>.tar.gz` (сборка задаётся в `gradle.properties`, ~1,3 ГБ, кэшируется между запусками) и передаёт путь через `-PopenidePath`.
-
-Выпустить релиз:
-
-```bash
-git tag v0.1.0 && git push origin v0.1.0
-```
-
 ## Установка в OpenIDE
 
 Settings → Plugins → ⚙ → **Install Plugin from Disk…** → выбрать zip из `build/distributions/` → перезапустить IDE.
