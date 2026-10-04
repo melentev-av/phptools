@@ -138,6 +138,27 @@
 | `@phan-suppress-next-line A, B` — через запятую | `PhanSuppress` |
 | Документация по проверкам переехала из wiki в `internal/Issue-Types-Caught-by-Phan.md` (заголовки `## PhanXxx`) | `docUrl` → `…/blob/v6/internal/Issue-Types-Caught-by-Phan.md#phanxxx` |
 
+## WSL (бриф 05)
+
+| API / факт | Где | Особенности |
+|---|---|---|
+| `WslDistributionManager.getInstance().getInstalledDistributionsFuture()`, `WSLDistribution.getMsId()` | `intellij.platform.ide.impl.jar` | Без пометок в 262. Используется только для списка дистрибутивов в настройках (асинхронно) |
+| `WSLDistribution.patchCommandLine(…, String, boolean)` | там же | `@Internal` + `@Deprecated` — **не используем**; команду `wsl.exe` собираем сами (`LaunchPlan`) |
+| `WSLDistribution.getUNCRootPath()` | там же | `@Experimental` — не используем; UNC-корень строим сами (`WslPaths.uncRoot`) |
+| `WslPath.parseWindowsUncPath`, `WSLDistribution.getWslPath(Path)` / `getWindowsPath(String)` | там же | Без пометок; можно использовать для сверки, основная логика — своя (`WslPaths`) |
+| `wsl.exe -d <distro> --cd <linux> --exec <cmd…>` | — | `--exec` без оболочки; `bash -lc` — одной строкой (`ShellQuote`) |
+| `WSL_UTF8=1` | — | Переключает собственные сообщения `wsl.exe` из UTF-16LE в UTF-8; запасной вариант — `WslOutput.fixUtf16` |
+
+**Проверить на Windows + WSL2 (не проверено, macOS):**
+
+1. Как выглядит `project.basePath` для проекта в WSL (`//wsl$/…`, `//wsl.localhost/…`?).
+2. Работает ли `WSL_UTF8=1` в установленной версии WSL; читаемы ли ошибки «дистрибутив не найден» по-русски.
+3. `PATH` у `--exec` без оболочки: находится ли `php` из пакетов дистрибутива; asdf/phpenv — только с login shell.
+4. Накладные расходы `wsl.exe` на запуск и «холодный» старт дистрибутива — не срабатывают ли таймауты.
+5. Отмена: убивает ли завершение `wsl.exe` процесс внутри WSL.
+6. `BinaryResolver` по UNC-путям (`Files.isRegularFile(\\wsl.localhost\…\vendor\bin\phpstan)`).
+7. Docker внутри WSL: работает ли `composeCommand = wsl.exe -d <distro> docker compose`.
+
 ## Встроенные анализаторы PHP-плагина (`ru.openide.openphp` 0.9.3)
 
 Из его `META-INF/plugin.xml`. Это внутренние ID чужого плагина: если они поменяются, `BuiltInAnalyzerCheck`

@@ -14,7 +14,6 @@
 | `php-cs-fixer` | Плагин `dev.phptools.phpcsfixer` (бриф 03). |
 | `phan` | Плагин `dev.phptools.phan` (бриф 04). |
 
-Запуск в WSL (OpenIDE на Windows, проект и PHP внутри WSL) — бриф 05, пока не реализован.
 Автоопределение Docker Compose из проекта (свой compose, Laravel Sail) — бриф 06, пока не реализован.
 
 Брифы лежат в `docs/briefs/`, заметки по API OpenIDE — в `docs/api-notes.md`.
@@ -74,6 +73,18 @@ openphpPluginPath=/Users/<you>/Library/Application Support/OpenIDE/OpenIDE2026.2
 ## Встроенные анализаторы PHP-плагина
 
 У PHP-плагина OpenIDE есть своя интеграция PHPStan, Psalm и PHP-CS-Fixer. Если её инспекция включена, при открытии проекта наш плагин один раз предлагает её выключить, чтобы ошибки не подсвечивались дважды (`core/.../startup/BuiltInAnalyzerCheck.kt`). Выключается только инспекция в профиле проекта, вернуть её можно в Settings → Editor → Inspections.
+
+## Где запускаются инструменты
+
+В настройках каждого плагина (Settings → Tools → <инструмент> → «Запуск») три режима:
+
+- **Локально** — `vendor/bin/<tool>` на этой машине.
+- **Docker Compose** — `docker compose exec -T <сервис> …`; пути проекта переводятся в путь внутри контейнера.
+- **WSL** (только когда OpenIDE запущена на Windows) — для проектов внутри WSL (`\\wsl$\Ubuntu\home\…` или `\\wsl.localhost\…`), когда PHP и Composer установлены в Linux. Плагин запускает `wsl.exe -d <дистрибутив> --cd <папка> --exec …` и переводит пути туда и обратно (`\\wsl.localhost\Ubuntu\home\u\app` ↔ `/home/u/app`, `C:\…` ↔ `/mnt/c/…`).
+  - Дистрибутив: пусто — из пути проекта, иначе дистрибутив по умолчанию.
+  - «Запускать через login shell» (`bash -lc`) — если `php` доступен только после профиля оболочки (asdf, phpenv и т.п.).
+  - Если проект открыт из WSL, а инструмент запускается локально, при открытии проекта плагин предложит переключиться на WSL.
+  - WSL-режим проверен юнит-тестами; живая проверка на Windows — по брифу 05.
 
 ## Установка в OpenIDE
 
