@@ -1,0 +1,53 @@
+name: Set up JDK, Gradle and OpenIDE
+description: >
+  JDK 25, Gradle and the OpenIDE distribution the plugins are built against
+  (build number from gradle.properties, tarball cached between runs). Exports OPENIDE_HOME.
+
+runs:
+  using: composite
+  steps:
+    - name: Set up JDK 25
+      uses: actions/setup-java@v4
+      with:
+        distribution: liberica
+        java-version: '25'
+
+    - name: Set up Gradle
+      uses: gradle/actions/setup-gradle@v4
+
+    - name: Read OpenIDE build
+      id: openide
+      shell: bash
+      run: |
+        build=$(grep -E '^openideBuild=' gradle.properties | cut -d= -f2 | tr -d '[:space:]')
+        test -n "$build" || { echo "openideBuild is not set in gradle.properties"; exit 1; }
+        echo "build=$build" >> "$GITHUB_OUTPUT"
+        echo "tarball=$RUNNER_TEMP/openide/openIDE-$build.tar.gz" >> "$GITHUB_OUTPUT"
+
+    - name: Cache OpenIDE distribution
+      id: cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ steps.openide.outputs.tarball }}
+        key: openide-linux-x64-${{ steps.openide.outputs.build }}
+
+    - name: Download OpenIDE ${{ steps.openide.outputs.build }}
+      if: steps.cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        mkdir -p "$(dirname '${{ steps.openide.outputs.tarball }}')"
+        curl -fL --retry 3 --retry-delay 10 -o '${{ steps.openide.outputs.tarball }}' \
+          "https://download.openide.ru/${{ steps.openide.outputs.build }}/openIDE-${{ steps.openide.outputs.build }}.tar.gz"
+
+    - name: Unpack OpenIDE
+      shell: bash
+      run: |
+        dir="$RUNNER_TEMP/openide/ide"
+        rm -rf "$dir" && mkdir -p "$dir"
+        tar -xzf '${{ steps.openide.outputs.tarball }}' -C "$dir"
+        # В архиве один корневой каталог openIDE-<build>/ с bin/, lib/, plugins/.
+        info=$(find "$dir" -maxdepth 3 -name product-info.json | head -1)
+        if [ -n "$info" ]; then home=$(dirname "$info"); else home=$(find "$dir" -mindepth 1 -maxdepth 1 -type d | head -1); fi
+        test -d "$home/lib" || { echo "OpenIDE home not found in the tarball"; exit 1; }
+        echo "OPENIDE_HOME=$home" >> "$GITHUB_ENV"
+        echo "OpenIDE: $home ($(cat "$home/build.txt" 2>/dev/null))"

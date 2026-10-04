@@ -1,0 +1,38 @@
+name: Build
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup-openide
+
+      - name: Build, test and verify plugins
+        run: ./gradlew build buildPlugin verifyPluginStructure -PopenidePath="$OPENIDE_HOME"
+
+      - name: Upload plugin zips
+        uses: actions/upload-artifact@v4
+        with:
+          name: plugins-${{ github.sha }}
+          path: '*/build/distributions/*.zip'
+          retention-days: 14
+
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-${{ github.sha }}
+          path: '*/build/reports/tests/'
+          retention-days: 7
