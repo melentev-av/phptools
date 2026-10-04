@@ -1,0 +1,3 @@
+<?php
+namespace App\Style;
+class NoEol { public function x() { return "x"; } }

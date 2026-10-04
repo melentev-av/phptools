@@ -1,0 +1,13 @@
+<?php
+
+namespace App\Style;
+
+class Messy
+{
+    public function greet($name)
+    {
+        $greeting = 'Привет';
+        $list = [1,2,3];
+        return $greeting . ' ' . $name;
+    }
+}

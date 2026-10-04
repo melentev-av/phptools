@@ -1,0 +1,15 @@
+<?php
+namespace App\Style;
+
+use App\Models\User;
+use Illuminate\Support\Str;
+
+class Messy
+{
+    public function greet( $name )
+    {
+        $greeting = "Привет";
+        $list = array(1,2,3);
+        return $greeting . " " . $name;
+    }
+}

@@ -2,19 +2,56 @@
     <id>dev.phptools.phpcsfixer</id>
     <name>PHP-CS-Fixer Integration</name>
     <description><![CDATA[
-    <p>PHP CS Fixer right in the OpenIDE editor. Runs locally or via Docker Compose.</p>
+    <p>PHP-CS-Fixer right in the OpenIDE editor: highlights code it would change (diff in the tooltip, unsaved files too),
+    applies one change or the whole file right from the diff, fixes files and folders, and shows a PHP-CS-Fixer tool window
+    with a report. Runs locally or via Docker Compose.</p>
     <p>Plugin for OpenIDE. JetBrains IDEs are not supported and not tested.</p>
-    <p>PHP CS Fixer прямо в редакторе OpenIDE. Запуск локально или через Docker Compose.</p>
+    <p>PHP-CS-Fixer прямо в редакторе OpenIDE: подсвечивает код, который он поменял бы (diff в подсказке, в том числе
+    для несохранённых файлов), применяет одно изменение или весь файл прямо из diff, исправляет файлы и папки и показывает
+    панель PHP-CS-Fixer с отчётом. Запуск локально или через Docker Compose.</p>
     <p>Плагин для OpenIDE. Работа в IDE JetBrains не поддерживается и не тестируется.</p>
     ]]></description>
 
     <depends>com.intellij.modules.platform</depends>
+    <!-- Список изменённых файлов в панели берётся из VCS -->
+    <depends>com.intellij.modules.vcs</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <notificationGroup id="php-cs-fixer" displayType="BALLOON"/>
         <!-- Предлагает выключить встроенный в PHP-плагин анализатор, чтобы ошибки не дублировались -->
         <postStartupActivity implementation="dev.phptools.phpcsfixer.PhpCsFixerBuiltInCheck"/>
+
+        <localInspection shortName="PhpCsFixerInspection"
+                         displayName="PHP-CS-Fixer validation"
+                         groupName="PHP tools"
+                         enabledByDefault="true"
+                         level="WEAK WARNING"
+                         implementationClass="dev.phptools.phpcsfixer.PhpCsFixerInspection"/>
+        <externalAnnotator language="PHP" implementationClass="dev.phptools.phpcsfixer.CsFixerAnnotator"/>
+        <editorNotificationProvider implementation="dev.phptools.phpcsfixer.CsFixerFileProblemsBanner"/>
+
+        <projectConfigurable parentId="tools"
+                             id="dev.phptools.phpcsfixer"
+                             displayName="PHP-CS-Fixer"
+                             instance="dev.phptools.phpcsfixer.CsFixerConfigurable"/>
+
+        <toolWindow id="PHP-CS-Fixer"
+                    anchor="left"
+                    secondary="false"
+                    icon="/icons/csfixer.svg"
+                    factoryClass="dev.phptools.phpcsfixer.CsFixerToolWindowFactory"/>
     </extensions>
+
+    <actions>
+        <action id="PhpTools.PhpCsFixer.Fix" class="dev.phptools.phpcsfixer.FixWithCsFixerAction">
+            <add-to-group group-id="CodeMenu" anchor="last"/>
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        </action>
+        <action id="PhpTools.PhpCsFixer.Check" class="dev.phptools.phpcsfixer.CsFixerCheckAction">
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        </action>
+    </actions>
 
     <applicationListeners>
         <listener class="dev.phptools.core.annotator.RehighlightOnSave"

@@ -1,0 +1,37 @@
+<?php
+
+namespace App\Style;
+
+class Long
+{
+    public function a()
+    {
+        return 'a';
+    }
+
+    public function b()
+    {
+        return 1;
+    }
+
+    public function c()
+    {
+        return 2;
+    }
+
+    public function d()
+    {
+        return 3;
+    }
+
+    public function e()
+    {
+        return 4;
+    }
+
+    public function f($x)
+    {
+        $y = [ $x ];
+        return $y;
+    }
+}

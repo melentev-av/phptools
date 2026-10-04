@@ -1,0 +1,38 @@
+<?php
+namespace App\Style;
+
+use App\Models\User;
+
+class Long
+{
+    public function a()
+    {
+        return "a";
+    }
+
+    public function b()
+    {
+        return 1;
+    }
+
+    public function c()
+    {
+        return 2;
+    }
+
+    public function d()
+    {
+        return 3;
+    }
+
+    public function e()
+    {
+        return 4;
+    }
+
+    public function f( $x )
+    {
+        $y = array( $x );
+        return $y;
+    }
+}
