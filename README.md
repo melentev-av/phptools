@@ -8,11 +8,11 @@
 
 | Модуль | Что это |
 |---|---|
-| `core` | Общий код: поиск бинарника, запуск локально или через Docker Compose, маппинг путей, базовые настройки, уведомления, базовый `ExternalAnnotator`. Отдельно не публикуется, вшивается в jar каждого плагина. |
-| `phpstan` | Плагин `dev.phptools.phpstan` (брифы 01a — редактор, 01b — панель и отчёт). |
-| `psalm` | Плагин `dev.phptools.psalm` (бриф 02). |
-| `php-cs-fixer` | Плагин `dev.phptools.phpcsfixer` (бриф 03). |
-| `phan` | Плагин `dev.phptools.phan` (бриф 04). |
+| `core` | Общий код: поиск бинарника, запуск локально, в Docker Compose (с автоопределением) или в WSL, маппинг путей, режимы проверки, базовые настройки, уведомления, базовый `ExternalAnnotator`, боковая панель с отчётом. Отдельно не публикуется, вшивается в jar каждого плагина. |
+| `phpstan` | Плагин `dev.phptools.phpstan`: ошибки PHPStan в редакторе, в том числе в несохранённом файле (`--tmp-file`), уровень из конфигурации, quick-fix `@phpstan-ignore`, ссылки на документацию ошибок, панель с изменёнными файлами и отчётом. Larastan подхватывается из конфигурации. |
+| `psalm` | Плагин `dev.phptools.psalm`: проблемы Psalm с точными колонками, info-проблемы как слабые предупреждения, quick-fix `@psalm-suppress`, ссылки на psalm.dev, панель с отчётом. Проверяет сохранённые файлы. |
+| `php-cs-fixer` | Плагин `dev.phptools.phpcsfixer`: подсветка кода, который поменяет PHP-CS-Fixer, с diff в подсказке (и для несохранённых файлов), исправление одного места или всего файла прямо из diff, «Исправить через PHP-CS-Fixer» для файлов и папок, панель с отчётом. |
+| `phan` | Плагин `dev.phptools.phan`: проблемы Phan в редакторе при сохранении, работа без `php-ast` (polyfill-парсер), quick-fix `@phan-suppress-next-line`, ссылки на документацию проверок, панель с отчётом. |
 
 
 Брифы лежат в `docs/briefs/`, заметки по API OpenIDE — в `docs/api-notes.md`.
@@ -89,7 +89,7 @@ openphpPluginPath=/Users/<you>/Library/Application Support/OpenIDE/OpenIDE2026.2
 
 ## CI и релизы (GitHub Actions)
 
-- **Build** (`.github/workflows/build.yml`) — на push в `develop`/`main` и на pull request: сборка, тесты, `verifyPluginStructure`; zip всех плагинов — в артефактах запуска.
+- **Build** (`.github/workflows/build.yml`) — на push в `develop` и на pull request (на `main` не нужна: туда попадает уже проверенное, а релиз собирает всё заново): сборка, тесты, `verifyPluginStructure`; zip всех плагинов — в артефактах запуска.
 - **Release** (`.github/workflows/release.yml`) — на тег `vX.Y.Z`: то же самое с версией из тега и GitHub Release со всеми четырьмя zip. Монорепозиторий, поэтому релиз общий: один тег — все плагины одной версии. Тег с суффиксом (`v0.2.0-beta.1`) — пре-релиз.
 - Платформа — настоящая OpenIDE: CI скачивает `https://download.openide.ru/<openideBuild>/openIDE-<openideBuild>.tar.gz` (сборка задаётся в `gradle.properties`, ~1,3 ГБ, кэшируется между запусками) и передаёт путь через `-PopenidePath`.
 
@@ -110,16 +110,6 @@ Settings → Plugins → ⚙ → **Install Plugin from Disk…** → выбра�
 ```
 
 Юнит-тесты на JUnit 5 покрывают чистую логику: маппинг путей, поиск бинарника на временной структуре папок, сборку командной строки для local и Docker, перевод строк и колонок в диапазоны. Платформенный тест-фреймворк не используется, потому что тянет артефакты с серверов JetBrains. Чистая логика вынесена в классы без зависимостей от платформы (`BinaryResolver`, `LaunchPlan`, `ProblemRanges`).
-
-## Ответы на открытые вопросы брифа 00
-
-Подробно, с указанием jar'ов, — в `docs/api-notes.md`.
-
-1. **ID языка PHP** — `PHP` (плагин `ru.openide.openphp`).
-2. **`ExternalAnnotatorBatchInspection`** — `com.intellij.codeInspection.ex.ExternalAnnotatorBatchInspection`.
-3. **UI DSL** — сигнатуры `textFieldWithBrowseButton`, `bindText(getter, setter)` и т.п. совпадают, адаптация не понадобилась.
-4. **Product-модуль OpenIDE** — собственного нет, плагины зависят от `com.intellij.modules.platform`. Установку только в OpenIDE штатно ограничить нельзя.
-5. **Требования маркетплейса OpenIDE** — публично не описаны, нужно уточнить в разделе «Опубликовать свой плагин» на marketplace.openide.ru до первой публикации.
 
 ## Публикация
 
