@@ -9,7 +9,7 @@ sealed interface Resolution {
     /** Бинарник найден на хосте. [workDir] — папка-владелец `vendor` (или корень проекта). */
     data class Local(val executable: Path, val workDir: Path) : Resolution
 
-    /** Docker-режим: заданный путь локально не найден, считаем его путём внутри контейнера. */
+    /** Docker/WSL: заданный путь локально не найден, считаем его путём внутри контейнера или дистрибутива. */
     data class InContainer(val executable: String, val workDir: Path) : Resolution
 
     /** Путь задан явно, но файла нет, а Docker выключен. Об этом нужно сказать пользователю. */
@@ -24,6 +24,7 @@ object BinaryResolver {
     /**
      * @param configured значение `ToolState.executable`; относительный путь резолвится от [projectBase].
      * @param contextDir папка анализируемого файла; поиск `vendor/bin` идёт от неё вверх до [projectBase].
+     * @param useDocker инструмент выполняется не на хосте (Docker или WSL).
      * @param preferBat Windows, локальный режим, без PHP-интерпретатора: брать `<binary>.bat`, если он есть рядом.
      */
     fun resolve(

@@ -7,6 +7,7 @@ import com.intellij.util.execution.ParametersListUtil
 import dev.phptools.core.PhpToolsBundle
 import dev.phptools.core.ToolSpec
 import dev.phptools.core.notify.ToolNotifier
+import dev.phptools.core.settings.RunMode
 import dev.phptools.core.settings.ToolState
 import java.nio.file.Path
 
@@ -40,7 +41,8 @@ object ToolLocator {
         val projectBase = Path.of(basePath)
         val php = state.phpInterpreter.orEmpty().trim()
 
-        val docker = if (state.useDocker) {
+        val mode = state.effectiveRunMode()
+        val docker = if (mode == RunMode.DOCKER) {
             val service = state.composeService.orEmpty().trim()
             if (service.isEmpty()) {
                 return Lookup.Misconfigured(
@@ -56,6 +58,24 @@ object ToolLocator {
         } else {
             null
         }
+        val wsl = if (mode == RunMode.WSL) {
+            if (!SystemInfo.isWindows) {
+                return Lookup.Misconfigured(
+                    PhpToolsBundle.message("notification.start.failed.title", spec.displayName),
+                    PhpToolsBundle.message("settings.wsl.windows.only"),
+                )
+            }
+            val distribution = state.wslDistribution.orEmpty().trim().ifEmpty { null } ?: WslPaths.distributionOf(basePath)
+            WslTarget(
+                distribution = distribution,
+                loginShell = state.wslLoginShell,
+                uncRoot = distribution?.let { WslPaths.uncRoot(basePath, it) },
+                windowsWorkDir = Path.of(System.getProperty("user.home")),
+            )
+        } else {
+            null
+        }
+        val remote = docker != null || wsl != null
 
         val contextDir = contextFile?.parent?.takeIf { it.isInLocalFileSystem }?.let { runCatching { it.toNioPath() }.getOrNull() }
         val resolution = BinaryResolver.resolve(
@@ -63,8 +83,8 @@ object ToolLocator {
             configured = state.executable.orEmpty().trim(),
             binaryName = spec.binaryName,
             contextDir = contextDir,
-            useDocker = docker != null,
-            preferBat = SystemInfo.isWindows && docker == null && php.isEmpty(),
+            useDocker = remote,
+            preferBat = SystemInfo.isWindows && !remote && php.isEmpty(),
         )
         return when (resolution) {
             is Resolution.ConfiguredMissing -> Lookup.Misconfigured(
@@ -73,7 +93,7 @@ object ToolLocator {
             )
             Resolution.NotInstalled -> Lookup.NotInstalled
             is Resolution.Local, is Resolution.InContainer -> {
-                val plan = LaunchPlan.create(projectBase, resolution, php, docker)
+                val plan = LaunchPlan.create(projectBase, resolution, php, docker, wsl)
                 Lookup.Ready(PreparedTool(spec, plan, state.timeoutSeconds.coerceAtLeast(1) * 1000))
             }
         }

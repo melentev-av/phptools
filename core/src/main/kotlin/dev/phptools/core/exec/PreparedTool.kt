@@ -33,6 +33,9 @@ class PreparedTool(
 ) {
     val isDocker: Boolean get() = plan.isDocker
 
+    /** «Docker», «WSL (Ubuntu)» или `null` — для шапки отчёта. */
+    val runtimeLabel: String? get() = plan.runtimeLabel
+
     /** Путь, понятный инструменту: локальный абсолютный или путь внутри контейнера. */
     fun toTarget(localPath: Path): String = plan.toTarget(localPath)
 
@@ -52,7 +55,7 @@ class PreparedTool(
      * в Docker — файл создаётся внутри контейнера из stdin.
      */
     fun runWithTempFile(content: String, ext: String, args: (tmpPath: String) -> List<String>): ToolOutput {
-        if (plan.isDocker) {
+        if (plan.usesRemoteTempFile) {
             val tmp = "/tmp/phptools-${UUID.randomUUID()}.$ext"
             return execute(plan.tempFileCommand(tmp, args(tmp)), content)
         }
@@ -81,6 +84,8 @@ class PreparedTool(
         commandLine
             .withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.NONE)
             .withEnvironment(environment)
+        // Собственные сообщения wsl.exe по умолчанию в UTF-16LE; WSL_UTF8=1 переключает их в UTF-8.
+        if (plan.isWsl) commandLine.withEnvironment("WSL_UTF8", "1")
         LOG.debug { "Running: ${commandLine.commandLineString} in ${spec.workDir}" }
 
         val handler = try {
@@ -107,7 +112,8 @@ class PreparedTool(
         // Отмена индикатора убивает процесс.
         val indicator = ProgressManager.getInstance().progressIndicator ?: EmptyProgressIndicator()
         val output = handler.runProcessWithProgressIndicator(indicator, timeoutMs, true)
-        return ToolOutput(output.exitCode, output.stdout, output.stderr, output.isTimeout, output.isCancelled)
+        val stderr = if (plan.isWsl) WslOutput.fixUtf16(output.stderr) else output.stderr
+        return ToolOutput(output.exitCode, output.stdout, stderr, output.isTimeout, output.isCancelled)
     }
 
     private fun closeQuietly(input: java.io.OutputStream) {

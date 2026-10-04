@@ -20,7 +20,16 @@ open class ToolState(
     var configPath by string("")
     /** Если задан — запуск как `<php> <executable>`. В Docker это команда внутри контейнера. */
     var phpInterpreter by string("")
+    /**
+     * Устаревший флаг Docker-режима (до брифа 05). Читается для совместимости со старыми настройками,
+     * новые значения пишет [runMode] (см. [effectiveRunMode]).
+     */
     var useDocker by property(false)
+    var runMode by enum(RunMode.LOCAL)
+    /** Имя дистрибутива WSL; пусто — из пути проекта (`\\wsl$\<имя>\…`), иначе дистрибутив по умолчанию. */
+    var wslDistribution by string("")
+    /** Запускать в WSL через `bash -lc` (php только после профиля: asdf, phpenv и т.п.). */
+    var wslLoginShell by property(false)
     var composeCommand by string(DEFAULT_COMPOSE_COMMAND)
     var composeService by string("")
     var containerProjectPath by string(DEFAULT_CONTAINER_PROJECT_PATH)
@@ -29,6 +38,15 @@ open class ToolState(
     var timeoutSeconds by property(defaultTimeoutSeconds)
     /** Когда запускать проверку в редакторе. На Inspect Code не влияет. */
     var checkMode by enum(defaultCheckMode)
+
+    /** Режим с учётом старых настроек: `useDocker = true` без явного режима — Docker. */
+    fun effectiveRunMode(): RunMode = if (runMode == RunMode.LOCAL && useDocker) RunMode.DOCKER else runMode
+
+    /** Записать режим; старый флаг держим согласованным, чтобы откат на старую версию плагина не терял Docker. */
+    fun applyRunMode(mode: RunMode) {
+        runMode = mode
+        useDocker = mode == RunMode.DOCKER
+    }
 
     companion object {
         const val DEFAULT_COMPOSE_COMMAND = "docker compose"
