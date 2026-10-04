@@ -33,4 +33,12 @@ interface ToolBatchAnalyzer {
 
     /** Quick-fix «игнорировать» для ошибки из отчёта или `null`. */
     fun ignoreFix(problem: ReportProblem): IntentionAction? = null
+
+    /**
+     * Необязательное действие над файлами из отчёта (например, «Исправить файл» у PHP-CS-Fixer).
+     * `null` — действия нет. Вызывается на EDT; долгую работу выполнять в фоне.
+     */
+    val fileActionText: String? get() = null
+
+    fun runFileAction(project: Project, files: List<Path>) {}
 }

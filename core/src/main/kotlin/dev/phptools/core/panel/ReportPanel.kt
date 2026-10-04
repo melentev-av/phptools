@@ -241,6 +241,14 @@ class ReportPanel(
         action(message("report.action.expand"), AllIcons.Actions.Expandall) { TreeUtil.expandAll(tree) },
         action(message("report.action.collapse"), AllIcons.Actions.Collapseall) { TreeUtil.collapseAll(tree, 0) },
         Separator.getInstance(),
+        action(
+            message("report.action.file.all", analyzer.fileActionText ?: ""),
+            AllIcons.Actions.Execute,
+            enabled = { !service.isRunning && service.report?.files?.isNotEmpty() == true },
+            visible = { analyzer.fileActionText != null },
+        ) {
+            service.report?.let { report -> analyzer.runFileAction(project, report.files.map { it.path }) }
+        },
         action(message("report.action.copy.md"), AllIcons.Actions.Copy, { service.report != null }) { copyMarkdown() },
         action(message("report.action.save.md"), AllIcons.Actions.Download, { service.report != null }) { saveMarkdown() },
         Separator.getInstance(),
@@ -252,6 +260,14 @@ class ReportPanel(
             navigate(selectedNode(), focus = true)
         },
         action(message("report.action.ignore"), null, { canIgnore() }) { ignoreSelected() },
+        action(
+            analyzer.fileActionText ?: "",
+            AllIcons.Actions.Execute,
+            enabled = { selectedFiles().isNotEmpty() },
+            visible = { analyzer.fileActionText != null },
+        ) {
+            analyzer.runFileAction(project, selectedFiles())
+        },
         Separator.getInstance(),
         action(message("report.action.copy.message"), AllIcons.Actions.Copy, { selectedProblem() != null }) {
             selectedProblem()?.let { copy(it.problem.message) }
@@ -263,6 +279,18 @@ class ReportPanel(
             selectedDocUrl()?.let(BrowserUtil::browse)
         },
     )
+
+    /** Файлы выбранных узлов дерева (файл, проблема или подсказка под проблемой). */
+    private fun selectedFiles(): List<java.nio.file.Path> =
+        tree.selectionPaths.orEmpty().mapNotNull { path ->
+            val treeNode = path.lastPathComponent as? DefaultMutableTreeNode ?: return@mapNotNull null
+            when (val node = treeNode.userObject) {
+                is Node.FileNode -> node.file.path
+                is Node.ProblemNode -> node.file.path
+                is Node.TipNode -> ((treeNode.parent as? DefaultMutableTreeNode)?.userObject as? Node.ProblemNode)?.file?.path
+                else -> null
+            }
+        }.distinct()
 
     private fun selectedDocUrl(): String? = when (val node = selectedNode()) {
         is Node.GroupNode -> node.docUrl
@@ -299,10 +327,17 @@ class ReportPanel(
         Files.writeString(target.file.toPath(), ReportView.toMarkdown(report, ReportView.filter(report, filter.text)))
     }
 
-    private fun action(text: String, icon: javax.swing.Icon?, enabled: () -> Boolean = { true }, perform: () -> Unit): AnAction =
+    private fun action(
+        text: String,
+        icon: javax.swing.Icon?,
+        enabled: () -> Boolean = { true },
+        visible: () -> Boolean = { true },
+        perform: () -> Unit,
+    ): AnAction =
         object : DumbAwareAction(text, null, icon) {
             override fun getActionUpdateThread() = ActionUpdateThread.EDT
             override fun update(e: AnActionEvent) {
+                e.presentation.isVisible = visible()
                 e.presentation.isEnabled = enabled()
             }
             override fun actionPerformed(e: AnActionEvent) = perform()
