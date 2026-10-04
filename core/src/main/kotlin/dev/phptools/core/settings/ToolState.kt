@@ -23,6 +23,8 @@ open class ToolState(defaultTimeoutSeconds: Int = 30) : BaseState() {
     /** Доп. аргументы, разбираются через `ParametersListUtil.parse`. */
     var extraArgs by string("")
     var timeoutSeconds by property(defaultTimeoutSeconds)
+    /** Когда запускать проверку в редакторе. На Inspect Code не влияет. */
+    var checkMode by enum(CheckMode.ON_TYPING)
 
     companion object {
         const val DEFAULT_COMPOSE_COMMAND = "docker compose"

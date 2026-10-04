@@ -9,6 +9,7 @@ import com.intellij.openapi.ui.Messages
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.Panel
+import com.intellij.ui.dsl.builder.bind
 import com.intellij.ui.dsl.builder.bindIntText
 import com.intellij.ui.dsl.builder.bindSelected
 import com.intellij.ui.dsl.builder.bindText
@@ -49,6 +50,12 @@ abstract class ToolConfigurable<S : ToolState>(
 
     override fun createPanel(): DialogPanel {
         dialogPanel = panel {
+            buttonsGroup(message("settings.mode")) {
+                row { radioButton(message("settings.mode.typing"), CheckMode.ON_TYPING) }
+                row { radioButton(message("settings.mode.save"), CheckMode.ON_SAVE) }
+                row { radioButton(message("settings.mode.manual"), CheckMode.MANUAL) }
+            }.bind({ working.checkMode }, { working.checkMode = it })
+
             group(message("settings.group.run")) {
                 row(message("settings.executable")) {
                     textFieldWithBrowseButton(FileChooserDescriptorFactory.singleFile(), project)

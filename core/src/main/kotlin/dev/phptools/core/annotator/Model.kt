@@ -30,4 +30,11 @@ data class ToolProblem(
     val fixes: List<IntentionAction> = emptyList(),
 )
 
-data class AnnotationResult(val problems: List<ToolProblem>, val stamp: Long)
+/** Результат одного запуска инструмента по файлу. */
+data class ToolFindings(
+    val problems: List<ToolProblem>,
+    /** Ошибки уровня файла, без строки: показываются полосой над редактором. */
+    val fileMessages: List<String> = emptyList(),
+)
+
+data class AnnotationResult(val findings: ToolFindings, val stamp: Long)

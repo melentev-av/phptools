@@ -23,7 +23,14 @@ object ToolNotifier {
 
     private val shown = ConcurrentHashMap.newKeySet<String>()
 
-    fun notifyFailure(project: Project, spec: ToolSpec, title: String, details: String) {
+    fun notifyFailure(project: Project, spec: ToolSpec, title: String, details: String) =
+        notify(project, spec, title, details, NotificationType.ERROR)
+
+    /** Информационное уведомление с тем же троттлингом (один раз за сессию на пару проект+инструмент). */
+    fun notifyInfo(project: Project, spec: ToolSpec, title: String, details: String) =
+        notify(project, spec, title, details, NotificationType.INFORMATION)
+
+    private fun notify(project: Project, spec: ToolSpec, title: String, details: String, type: NotificationType) {
         if (project.isDisposed) return
         if (!shown.add(key(project, spec, title))) return
 
@@ -33,7 +40,7 @@ object ToolNotifier {
             return
         }
         val content = StringUtil.escapeXmlEntities(details).replace("\n", "<br>")
-        group.createNotification(title, content, NotificationType.ERROR)
+        group.createNotification(title, content, type)
             .addAction(NotificationAction.createSimpleExpiring(PhpToolsBundle.message("notification.open.settings")) {
                 openSettings(project, spec)
             })
