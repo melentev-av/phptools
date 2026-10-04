@@ -67,6 +67,11 @@ class PreparedTool(
             .withWorkingDirectory(spec.workDir)
             .withCharset(StandardCharsets.UTF_8)
             .withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE)
+        // Окружение консоли, но без переменных AI-агентов (см. AgentEnvironment).
+        val environment = AgentEnvironment.strip(commandLine.parentEnvironment)
+        commandLine
+            .withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.NONE)
+            .withEnvironment(environment)
         LOG.debug { "Running: ${commandLine.commandLineString} in ${spec.workDir}" }
 
         val handler = try {
