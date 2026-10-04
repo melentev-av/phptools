@@ -16,6 +16,8 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <notificationGroup id="psalm" displayType="BALLOON"/>
+        <!-- Проект в Docker Compose, а локально инструмент не запустится — предложить Docker -->
+        <postStartupActivity implementation="dev.phptools.psalm.PsalmDockerSuggestion"/>
         <!-- Windows: проект в WSL, а инструмент запускается локально — предложить WSL -->
         <postStartupActivity implementation="dev.phptools.psalm.PsalmWslSuggestion"/>
         <!-- Предлагает выключить встроенный в PHP-плагин анализатор, чтобы ошибки не дублировались -->

@@ -19,3 +19,8 @@ class PsalmBuiltInCheck : BuiltInAnalyzerCheck(PsalmTool.SPEC)
 class PsalmWslSuggestion : dev.phptools.core.startup.WslSuggestion(PsalmTool.SPEC) {
     override fun state(project: com.intellij.openapi.project.Project) = PsalmSettings.getInstance(project).state
 }
+
+/** Проект в Docker Compose, а локально инструмент не запустится — предложить Docker-режим. */
+class PsalmDockerSuggestion : dev.phptools.core.docker.DockerSuggestion(PsalmTool.SPEC) {
+    override fun state(project: com.intellij.openapi.project.Project) = PsalmSettings.getInstance(project).state
+}

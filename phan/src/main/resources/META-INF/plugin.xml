@@ -16,6 +16,8 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <notificationGroup id="phan" displayType="BALLOON"/>
+        <!-- Проект в Docker Compose, а локально инструмент не запустится — предложить Docker -->
+        <postStartupActivity implementation="dev.phptools.phan.PhanDockerSuggestion"/>
         <!-- Windows: проект в WSL, а инструмент запускается локально — предложить WSL -->
         <postStartupActivity implementation="dev.phptools.phan.PhanWslSuggestion"/>
 

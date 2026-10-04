@@ -19,3 +19,8 @@ class PhpStanBuiltInCheck : BuiltInAnalyzerCheck(PhpStanTool.SPEC)
 class PhpStanWslSuggestion : dev.phptools.core.startup.WslSuggestion(PhpStanTool.SPEC) {
     override fun state(project: com.intellij.openapi.project.Project) = PhpStanSettings.getInstance(project).state
 }
+
+/** Проект в Docker Compose, а локально инструмент не запустится — предложить Docker-режим. */
+class PhpStanDockerSuggestion : dev.phptools.core.docker.DockerSuggestion(PhpStanTool.SPEC) {
+    override fun state(project: com.intellij.openapi.project.Project) = PhpStanSettings.getInstance(project).state
+}

@@ -19,3 +19,8 @@ class PhpCsFixerBuiltInCheck : BuiltInAnalyzerCheck(PhpCsFixerTool.SPEC)
 class CsFixerWslSuggestion : dev.phptools.core.startup.WslSuggestion(PhpCsFixerTool.SPEC) {
     override fun state(project: com.intellij.openapi.project.Project) = CsFixerSettings.getInstance(project).state
 }
+
+/** Проект в Docker Compose, а локально инструмент не запустится — предложить Docker-режим. */
+class CsFixerDockerSuggestion : dev.phptools.core.docker.DockerSuggestion(PhpCsFixerTool.SPEC) {
+    override fun state(project: com.intellij.openapi.project.Project) = CsFixerSettings.getInstance(project).state
+}

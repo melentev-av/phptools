@@ -195,3 +195,8 @@ class PhanFileProblemsBanner : FileProblemsBanner(PhanTool.SPEC)
 class PhanWslSuggestion : dev.phptools.core.startup.WslSuggestion(PhanTool.SPEC) {
     override fun state(project: com.intellij.openapi.project.Project) = PhanSettings.getInstance(project).state
 }
+
+/** Проект в Docker Compose, а локально инструмент не запустится — предложить Docker-режим. */
+class PhanDockerSuggestion : dev.phptools.core.docker.DockerSuggestion(PhanTool.SPEC) {
+    override fun state(project: com.intellij.openapi.project.Project) = PhanSettings.getInstance(project).state
+}
