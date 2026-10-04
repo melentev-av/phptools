@@ -2,9 +2,11 @@
     <id>dev.phptools.phpstan</id>
     <name>PHPStan Integration</name>
     <description><![CDATA[
-    <p>PHPStan errors right in the OpenIDE editor. Runs locally or via Docker Compose.</p>
+    <p>PHPStan errors right in the OpenIDE editor: while typing, on save or on demand. Runs locally or via Docker Compose.
+    Larastan is picked up automatically from the PHPStan configuration.</p>
     <p>Plugin for OpenIDE. JetBrains IDEs are not supported and not tested.</p>
-    <p>Ошибки PHPStan прямо в редакторе OpenIDE. Запуск локально или через Docker Compose.</p>
+    <p>Ошибки PHPStan прямо в редакторе OpenIDE: при вводе, при сохранении или по команде. Запуск локально или через Docker Compose.
+    Larastan подхватывается из конфигурации PHPStan автоматически.</p>
     <p>Плагин для OpenIDE. Работа в IDE JetBrains не поддерживается и не тестируется.</p>
     ]]></description>
 
@@ -14,6 +16,20 @@
         <notificationGroup id="phpstan" displayType="BALLOON"/>
         <!-- Предлагает выключить встроенный в PHP-плагин анализатор, чтобы ошибки не дублировались -->
         <postStartupActivity implementation="dev.phptools.phpstan.PhpStanBuiltInCheck"/>
+
+        <localInspection shortName="PhpStanInspection"
+                         displayName="PHPStan validation"
+                         groupName="PHP tools"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         implementationClass="dev.phptools.phpstan.PhpStanInspection"/>
+        <externalAnnotator language="PHP" implementationClass="dev.phptools.phpstan.PhpStanAnnotator"/>
+        <editorNotificationProvider implementation="dev.phptools.phpstan.PhpStanFileProblemsBanner"/>
+
+        <projectConfigurable parentId="tools"
+                             id="dev.phptools.phpstan"
+                             displayName="PHPStan"
+                             instance="dev.phptools.phpstan.PhpStanConfigurable"/>
     </extensions>
 
     <applicationListeners>
