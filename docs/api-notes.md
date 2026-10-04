@@ -68,6 +68,24 @@
 | `LocalInspectionTool` + `ExternalAnnotatorBatchInspection` | `intellij.platform.analysis.jar` / `.impl.jar` | `getShortName()` переопределён. |
 | `IntentionAction` (`getText`, `getFamilyName`, `isAvailable`, `invoke`, `startInWriteAction`) | `intellij.platform.analysis.jar` | — |
 
+## API, добавленное в брифе 01b (панель и отчёт)
+
+| Класс / метод | Jar | Особенности |
+|---|---|---|
+| `ToolWindowFactory.createToolWindowContent(project, toolWindow)`, `<toolWindow id anchor icon factoryClass>` | `intellij.platform.ide.jar` | Иконка панели — PNG 20×20 (+@2x) для нового UI. |
+| `ContentFactory.getInstance().createContent(component, title, false)` | `intellij.platform.ide.core.jar` | — |
+| `ChangeListManager.getAllChanges()`, `getUnversionedFilesPaths()`, `ChangeListListener.TOPIC` / `changeListUpdateDone()` | `intellij.platform.vcs.jar` | Модуль `com.intellij.modules.vcs` — добавлен `<depends>` в plugin.xml. |
+| `CheckBoxList.setItems/setItemSelected/isItemSelected/setCheckBoxListListener` | `intellij.platform.ide.jar` | — |
+| `ColoredTreeCellRenderer.append(text, attrs, tag)` + `SimpleColoredComponent.getFragmentTagAt(x)` | `intellij.platform.ide.jar` | Кликабельные ссылки в дереве отчёта. |
+| `Task.Backgroundable(project, title, true)` + `queue()`, `onSuccess/onFinished` | `intellij.platform.core.jar` | `BackgroundableProcessIndicator` — impl-класс, не используем; индикатор берём внутри `run`. |
+| `FileDocumentManager.saveAllDocuments()` | `intellij.platform.core.jar` | **Требует write-intent lock.** Обработчики Swing-кнопок в 262 его не имеют → «Access is allowed from write thread only». `WriteIntentReadAction` целиком `@ApiStatus.Experimental`, поэтому вызов переносится в `Application.invokeLater` (выполняется под write-intent lock). |
+| `ActionManager.createActionToolbar(place, group, horizontal)`, `ToggleAction`, `DumbAwareAction`, `getActionUpdateThread()` | `intellij.platform.ide.jar` | — |
+| `PopupHandler.installPopupMenu(component, group, place)` | `intellij.platform.ide.jar` | — |
+| `FileChooserFactory.createSaveFileDialog(FileSaverDescriptor, project).save(name)` | `intellij.platform.ide.jar` | — |
+| `WriteCommandAction.runWriteCommandAction(project, name, groupId, runnable, psiFile)` | `intellij.platform.core.jar` | Quick-fix из отчёта. |
+| `CommonDataKeys.VIRTUAL_FILE_ARRAY`, группа `ProjectViewPopupMenu` | — | Действие «Проверить PHPStan». |
+| Горячая перезагрузка плагина в песочнице (`idea.auto.reload.plugins`) | — | Для плагина с панелью и сервисами не срабатывает («new plugins state did not meet expectations») — песочницу нужно перезапускать. |
+
 ## PHPStan (проверено на 2.2.16 + Larastan 3.12, PHP 8.5)
 
 | Факт | Как проверено | Что сделано в плагине |
@@ -80,6 +98,7 @@
 | `dump-parameters --json` отдаёт плоский объект параметров: `"level": 6` (число или `"max"`), `"usedLevel": "6"` | Вывод команды | `PhpStanConfigLevel` |
 | `--tmp-file`/`--instead-of` работают в 2.2.16; в 1.12.0 — stderr `The "--tmp-file" option does not exist.`, код 1 | PHPStan 1.12.0 во временной папке | `PhpStanResult.TmpFileUnsupported` |
 | Синтаксическая ошибка: `identifier: "phpstan.parse"`, `ignorable: false`, со строкой | `app/Syntax.php` | Quick-fix не предлагается |
+| Пакетный запуск: файл из `excludePaths` в списке путей просто пропускается; без путей берутся `paths` из конфига; папки поддерживаются | `analyse a.php Excluded.php b.php`, `analyse`, `analyse app/Http` | Пакетный режим панели, `LaunchPlan.fromTarget` для путей из контейнера |
 | В Docker ключи `files` — пути контейнера (`/var/www/html/app/...`) | `docker compose exec` с `php:8.5-cli` | Сопоставление по концу относительного пути |
 
 ## Встроенные анализаторы PHP-плагина (`ru.openide.openphp` 0.9.3)
