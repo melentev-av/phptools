@@ -31,7 +31,7 @@ intellijPlatform {
     instrumentCode = false             // форм нет; иначе нужны артефакты с серверов JetBrains
     buildSearchableOptions = false
     pluginConfiguration {
-        version = providers.gradleProperty("pluginVersion")
+        version = providers.gradleProperty("pluginVersion.${project.name}")
         vendor {
             name = providers.gradleProperty("pluginVendor")
             email = providers.gradleProperty("pluginVendorEmail")

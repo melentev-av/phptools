@@ -1,9 +1,10 @@
 name: Release
 
-# Монорепозиторий: один тег vX.Y.Z — один релиз со всеми плагинами одной версии.
+# Каждый плагин выпускается отдельно: тег <модуль>-vX.Y.Z (phpstan-v0.2.1, php-cs-fixer-v0.3.0) —
+# релиз одного плагина. Версия в теге должна совпадать с pluginVersion.<модуль> в gradle.properties.
 on:
   push:
-    tags: ['v*.*.*']
+    tags: ['*-v*.*.*']
 
 permissions:
   contents: write
@@ -14,24 +15,45 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0               # нужен предыдущий тег этого плагина для заметок к релизу
+
+      - name: Plugin and version from tag
+        id: tag
+        run: |
+          tag="$GITHUB_REF_NAME"
+          module="${tag%-v*}"
+          version="${tag##*-v}"
+          if [[ ! -f "$module/build.gradle.kts" || "$module" == core ]]; then
+            echo "::error::Тег $tag: нет плагина «$module»"; exit 1
+          fi
+          expected="$(sed -n "s/^pluginVersion\.$module=//p" gradle.properties)"
+          if [[ "$version" != "$expected" ]]; then
+            echo "::error::Тег $tag: версия $version, а в gradle.properties pluginVersion.$module=$expected"; exit 1
+          fi
+          name="$(sed -n 's:.*<name>\(.*\)</name>.*:\1:p' "$module/src/main/resources/META-INF/plugin.xml" | head -1)"
+          previous="$(git describe --tags --abbrev=0 --match "$module-v*" "$tag^" 2>/dev/null || true)"
+          {
+            echo "module=$module"
+            echo "version=$version"
+            echo "name=$name"
+            echo "notes-start=${previous:+--notes-start-tag $previous}"
+            # X.Y.Z-beta.1 и т.п. — пре-релиз
+            if [[ "$version" == *-* ]]; then echo "prerelease=--prerelease"; fi
+          } >> "$GITHUB_OUTPUT"
 
       - uses: ./.github/actions/setup-openide
 
-      - name: Version from tag
-        id: version
-        run: |
-          version="${GITHUB_REF_NAME#v}"
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-          # vX.Y.Z-beta.1 и т.п. — пре-релиз
-          if [[ "$version" == *-* ]]; then echo "prerelease=--prerelease" >> "$GITHUB_OUTPUT"; fi
-
-      - name: Build, test and verify plugins
-        run: ./gradlew build buildPlugin verifyPluginStructure -PopenidePath="$OPENIDE_HOME" -PpluginVersion="${{ steps.version.outputs.version }}"
+      - name: Build, test and verify plugin
+        run: >
+          ./gradlew :core:build :${{ steps.tag.outputs.module }}:build
+          :${{ steps.tag.outputs.module }}:buildPlugin :${{ steps.tag.outputs.module }}:verifyPluginStructure
+          -PopenidePath="$OPENIDE_HOME"
 
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" */build/distributions/*.zip \
-            --title "PHP Tools ${{ steps.version.outputs.version }}" \
-            --generate-notes --verify-tag ${{ steps.version.outputs.prerelease }}
+          gh release create "$GITHUB_REF_NAME" ${{ steps.tag.outputs.module }}/build/distributions/*.zip \
+            --title "${{ steps.tag.outputs.name }} ${{ steps.tag.outputs.version }}" \
+            --generate-notes ${{ steps.tag.outputs.notes-start }} --verify-tag ${{ steps.tag.outputs.prerelease }}

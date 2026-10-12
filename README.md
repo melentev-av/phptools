@@ -49,7 +49,7 @@ export JAVA_HOME=/path/to/jdk-25
 ./gradlew buildPlugin
 ```
 
-`buildPlugin` собирает zip каждого плагина в `<модуль>/build/distributions/`, например `phpstan/build/distributions/phpstan-0.1.0.zip`. Классы `core` уже внутри jar плагина, отдельные зависимости не нужны.
+`buildPlugin` собирает zip каждого плагина в `<модуль>/build/distributions/`, например `phpstan/build/distributions/phpstan-0.2.0.zip`. Классы `core` уже внутри jar плагина, отдельные зависимости не нужны.
 
 ```bash
 ./gradlew :phpstan:runIde
@@ -68,6 +68,31 @@ openphpPluginPath=/Users/<you>/Library/Application Support/OpenIDE/OpenIDE2026.2
 ```bash
 ./gradlew :phpstan:runIdeWithPhp --args="$PWD/playground/builtin-check"
 ```
+
+## Версии и релизы
+
+Версия у каждого плагина своя, все они в корневом `gradle.properties`:
+
+```properties
+pluginVersion.phpstan=0.2.0
+pluginVersion.psalm=0.2.0
+pluginVersion.php-cs-fixer=0.2.0
+pluginVersion.phan=0.2.0
+```
+
+Чтобы выпустить один плагин, поднимите его версию, закоммитьте и запушьте тег `<модуль>-v<версия>`:
+
+```bash
+git tag -a phpstan-v0.2.1 -m "PHPStan Integration 0.2.1"
+```
+
+```bash
+git push origin phpstan-v0.2.1
+```
+
+Workflow `Release` собирает и проверяет только этот плагин и создаёт GitHub-релиз с его zip. Заметки к релизу считаются от предыдущего тега того же плагина. Если версия в теге не совпадает с `gradle.properties`, релиз не создаётся. Тег с дефисом в версии (`phpstan-v0.3.0-beta.1`) даёт пре-релиз.
+
+`core` вшивается в каждый плагин, своей версии у него нет. Изменение в `core` попадает к пользователям только в тех плагинах, у которых подняли версию и выпустили релиз.
 
 ## Встроенные анализаторы PHP-плагина
 
