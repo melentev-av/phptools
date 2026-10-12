@@ -57,13 +57,13 @@ export JAVA_HOME=/path/to/jdk-25
 
 `runIde` запускает песочницу OpenIDE с плагином. Конфигурация и логи песочницы лежат в `.intellijPlatform/sandbox/` и не трогают основную установку.
 
-PHP-плагин OpenIDE не входит в поставку IDE, поэтому в обычной песочнице PHP-файлов нет. Для ручной проверки есть задача `runIdeWithPhp`: она кладёт PHP-плагин только в песочницу, в зависимости сборки он не попадает. Путь к jar задаётся в `~/.gradle/gradle.properties`:
+PHP-плагин OpenIDE не входит в поставку IDE, поэтому в обычной песочнице PHP-файлов нет. Для ручной проверки есть задача `runIdeWithPhp`: она кладёт PHP-плагин только в песочницу, в зависимости сборки он не попадает. Путь к установленному PHP-плагину задаётся в `~/.gradle/gradle.properties`:
 
 ```properties
-openphpPluginPath=/Users/<you>/Library/Application Support/OpenIDE/OpenIDE2026.2/plugins/php-for-openide/lib/php-for-openide-0.9.3.jar
+openphpPluginPath=/Users/<you>/Library/Application Support/OpenIDE/OpenIDE2026.2/plugins/php-for-openide
 ```
 
-Указывать нужно сам jar, а не папку `php-for-openide`: папку Gradle-плагин копирует без обёртки, и IDE её не загружает.
+Достаточно указать папку `php-for-openide`: сборка сама найдёт в её `lib/` jar `php-for-openide-<версия>.jar` и положит в песочницу именно его (папку целиком Gradle-плагин копирует без обёртки, и IDE её не загружает). Поэтому после обновления PHP-плагина путь менять не нужно. Путь прямо к jar тоже работает.
 
 ```bash
 ./gradlew :phpstan:runIdeWithPhp --args="$PWD/playground/builtin-check"

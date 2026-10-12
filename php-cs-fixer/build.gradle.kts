@@ -47,12 +47,16 @@ intellijPlatform {
 // Песочница с PHP-плагином OpenIDE для ручной проверки: ./gradlew :<модуль>:runIdeWithPhp.
 // Плагин кладётся только в песочницу и в зависимости сборки не попадает.
 // Задача есть, только если задан openphpPluginPath (в CI его нет).
-providers.gradleProperty("openphpPluginPath").orNull?.let { openphpPluginPath ->
+// Можно указать папку php-for-openide: jar с версией в имени ищется в её lib/, и путь не устаревает после обновления.
+providers.gradleProperty("openphpPluginPath").orNull?.let { file(it) }?.let { path ->
+    if (!path.isDirectory) return@let path
+    path.resolve("lib").listFiles { f -> f.name.matches(Regex("""php-for-openide-[\d.]+\.jar""")) }?.singleOrNull()
+}?.let { openphpPluginJar ->
     intellijPlatformTesting {
         runIde {
             register("runIdeWithPhp") {
                 plugins {
-                    localPlugin(openphpPluginPath)
+                    localPlugin(openphpPluginJar)
                 }
             }
         }
