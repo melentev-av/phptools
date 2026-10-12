@@ -8,7 +8,7 @@
 
 | # | Вопрос | Ответ |
 |---|---|---|
-| 1 | ID языка PHP | `PHP`. В `plugin.xml` плагина `ru.openide.openphp` 0.9.3: `<fileType name="PHP" language="PHP" extensions="php;phtml">`. |
+| 1 | ID языка PHP | `PHP`. В `plugin.xml` плагина `ru.openide.openphp` 0.9.3–0.9.7: `<fileType name="PHP" language="PHP" extensions="php;phtml">`. |
 | 2 | Пакет `ExternalAnnotatorBatchInspection` | `com.intellij.codeInspection.ex.ExternalAnnotatorBatchInspection` (`lib/intellij.platform.analysis.impl.jar`). Интерфейс, наследует `PairedUnfairLocalInspectionTool`; абстрактный только `getShortName()`. |
 | 3 | Сигнатуры UI DSL | Совпадают с ожидаемыми, адаптация не нужна. `Row.textFieldWithBrowseButton(FileChooserDescriptor, Project?, (VirtualFile) -> String)`, `bindText(getter, setter)` есть и для `JTextComponent`, и для `TextFieldWithBrowseButton`; `bindIntText(getter, setter)`, `bindSelected(getter, setter)`; `Row.visibleIf(ComponentPredicate)`. |
 | 4 | Собственный product-модуль OpenIDE | **Нет.** В `lib/*.jar` объявлены только стандартные `com.intellij.modules.*` (`platform`, `lang`, `idea`, `idea.community`, …). Отличительные признаки OpenIDE — пакет `ru.openide.*` в ядре и essential-плагин `ru.openide.pro.updater` (в `idea/IdeaApplicationInfo.xml`), но зависеть от них для ограничения установки неправильно. Используем `<depends>com.intellij.modules.platform</depends>`. |
@@ -21,7 +21,7 @@
 | `product-info.json`: `productCode = "IC"`, `minRequiredJavaVersion = 25` | `Contents/Resources/product-info.json` | Gradle-плагин видит OpenIDE как IntelliJ IDEA Community (`IC-2026.2.3` в пути песочницы). |
 | `local(openidePath)` принимает путь к `.app` | IntelliJ Platform Gradle Plugin 2.19.0 | На macOS указывать `/Applications/OpenIDE.app`, а не `Contents`. |
 | `pluginComposedModule(implementation(project(":core")))` | IntelliJ Platform Gradle Plugin 2.19.0 | С обычным `implementation(project(":core"))` модуль `org.jetbrains.intellij.platform.module` кладётся в `lib/modules/php-tools.core.jar`, а это место для content-модулей plugin model v2, и без `<content>` в `plugin.xml` его нет в classpath. `pluginComposedModule` вшивает классы `core` в jar плагина. |
-| PHP-плагин | `~/Library/Application Support/OpenIDE/OpenIDE2026.2/plugins/php-for-openide/lib/php-for-openide-0.9.3.jar` | ID `ru.openide.openphp`, `since-build="262" until-build="262.*"`. Не в бандле IDE, ставится в пользовательские плагины. С 0.9.3 есть **своя** интеграция PHPStan, Psalm, Mago, PHP_CodeSniffer и PHP CS Fixer (Settings → PHP → Анализ и форматирование). |
+| PHP-плагин | `~/Library/Application Support/OpenIDE/OpenIDE2026.2/plugins/php-for-openide/lib/php-for-openide-<версия>.jar` (проверено на 0.9.3 и 0.9.7) | ID `ru.openide.openphp`, `since-build="262" until-build="262.*"`. Не в бандле IDE, ставится в пользовательские плагины. С 0.9.3 есть **своя** интеграция PHPStan, Psalm, Mago, PHP_CodeSniffer и PHP CS Fixer (Settings → PHP → Анализ и форматирование). |
 
 ## API, используемое в `core`
 
@@ -170,7 +170,7 @@
 | `PathEnvironmentVariableUtil.findInPath("php")` | Есть ли `php` локально (решение «предлагать ли Docker») |
 | `JBPopupFactory.createPopupChooserBuilder(list)` | Выбор сервиса; `Messages.showChooseDialog` — `@Deprecated` в 262 |
 
-## Встроенные анализаторы PHP-плагина (`ru.openide.openphp` 0.9.3)
+## Встроенные анализаторы PHP-плагина (`ru.openide.openphp` 0.9.3, сверено с 0.9.7)
 
 Из его `META-INF/plugin.xml`. Это внутренние ID чужого плагина: если они поменяются, `BuiltInAnalyzerCheck`
 просто перестанет срабатывать, без ошибок. При обновлении PHP-плагина сверять заново.
